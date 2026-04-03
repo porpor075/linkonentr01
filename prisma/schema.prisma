@@ -1,0 +1,90 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// 1. User Management
+model User {
+  id            String    @id @default(uuid())
+  username      String    @unique
+  password      String
+  fullName      String
+  role          String    @default("agent")
+  isActive      Boolean   @default(true)
+  deletedAt     DateTime? 
+  quotations    Quotation[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([id])
+  @@index([username])
+}
+
+// 2. Insurance Products
+model Insurer {
+  id              Int              @id @default(autoincrement())
+  nameTh          String
+  nameEn          String
+  logoUrl         String?
+  apiEndpoint     String?
+  integrationType String           @default("MANUAL") // "API" หรือ "MANUAL"
+  lastStatus      String?
+  lastStatusMsg   String?
+  lastChecked     String?
+  plans           InsurancePlan[]
+  createdAt       DateTime         @default(now())
+}
+
+model InsurancePlan {
+  id            String    @id @default(uuid())
+  insurerId     Int
+  insurer       Insurer   @relation(fields: [insurerId], references: [id])
+  planName      String
+  planCode      String    
+  planType      String    
+  repairType    String    
+  basePremium   Decimal   @db.Decimal(12, 2)
+  totalPremium  Decimal   @db.Decimal(12, 2)
+  policies      Policy[]
+  isActive      Boolean   @default(true)
+  
+  @@index([planCode])
+}
+
+// 3. Sales & Quotations
+model Quotation {
+  id            String    @id @default(uuid())
+  userId        String    
+  user          User      @relation(fields: [userId], references: [id])
+  customerName  String?
+  vehicleBrand  String
+  vehicleModel  String
+  vehicleYear   String
+  sumInsured    Decimal   @db.Decimal(12, 2)
+  status        String    @default("draft") 
+  policies      Policy[]
+  createdAt     DateTime  @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// 4. Policies & Commissions
+model Policy {
+  id               String    @id @default(uuid())
+  quotationId      String
+  quotation        Quotation @relation(fields: [quotationId], references: [id])
+  planId           String
+  plan             InsurancePlan @relation(fields: [planId], references: [id])
+  policyNumber     String?
+  status           String    @default("pending")
+  premiumAmount    Decimal   @db.Decimal(12, 2)
+  commissionAmount Decimal   @db.Decimal(12, 2)
+  createdAt        DateTime  @default(now())
+}

@@ -1,0 +1,83 @@
+[
+  {
+    "id": "POL-1711700001",
+    "quotationId": "QUO-001",
+    "userId": "agent-uuid",
+    "createdAt": "2026-04-01T08:30:00.000Z",
+    "premiumAmount": 19200,
+    "commissionAmount": 1920,
+    "status": "SUCCESS",
+    "policyNumber": "MOCK-VMI1-8899",
+    "quotation": {
+      "customerName": "คุณสมชาย รักชาติ",
+      "vehicleBrand": "Toyota",
+      "vehicleModel": "Corolla Altis",
+      "user": {
+        "id": "agent-uuid",
+        "fullName": "NTR Agent"
+      }
+    },
+    "plan": {
+      "planName": "ประกันชั้น 1 (Super Protection)",
+      "insurer": {
+        "id": 1,
+        "nameTh": "อลิอันซ์ อยุธยา ประกันภัย",
+        "integrationType": "API"
+      }
+    }
+  },
+  {
+    "id": "POL-1711700002",
+    "quotationId": "QUO-002",
+    "userId": "agent-uuid",
+    "createdAt": "2026-04-02T09:15:00.000Z",
+    "premiumAmount": 8900,
+    "commissionAmount": 890,
+    "status": "SUCCESS",
+    "policyNumber": "MOCK-VMI2P-1234",
+    "quotation": {
+      "customerName": "คุณวิภาวี ใจดี",
+      "vehicleBrand": "Honda",
+      "vehicleModel": "Civic",
+      "user": {
+        "id": "agent-uuid",
+        "fullName": "NTR Agent"
+      }
+    },
+    "plan": {
+      "planName": "ประกันชั้น 2+ (Extra Safe)",
+      "insurer": {
+        "id": 1,
+        "nameTh": "อลิอันซ์ อยุธยา ประกันภัย",
+        "integrationType": "API"
+      }
+    }
+  },
+  {
+    "id": "POL-1711700003",
+    "quotationId": "QUO-003",
+    "userId": "agent-uuid",
+    "createdAt": "2026-04-03T10:00:00.000Z",
+    "premiumAmount": 6900,
+    "commissionAmount": 690,
+    "status": "SUCCESS",
+    "policyNumber": "MOCK-VMI3P-7722",
+    "quotation": {
+      "customerName": "คุณมานะ ขยันเรียน",
+      "vehicleBrand": "Mazda",
+      "vehicleModel": "Mazda 2",
+      "user": {
+        "id": "agent-uuid",
+        "fullName": "NTR Agent"
+      }
+    },
+    "plan": {
+      "planName": "ประกันชั้น 3+ (Value Save)",
+      "insurer": {
+        "id": 1,
+        "nameTh": "อลิอันซ์ อยุธยา ประกันภัย",
+        "integrationType": "API"
+      }
+    }
+  }
+]
