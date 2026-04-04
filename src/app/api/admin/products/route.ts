@@ -22,6 +22,8 @@ export async function GET(request: NextRequest) {
         const insurer = insurers.find((i) => i.id === Number(insurerId));
         if (insurer?.integrationType === 'API' && insurer.nameEn.toLowerCase().includes('allianz')) {
           const token = await getAllianzAccessToken();
+          if (!token) return APIResponse.error('Failed to get Allianz token');
+          
           const mockVehicle = { brand: "16", model: "1041", year: "2025", fuelType: "PETROL" };
           const apiResult = await getAllianzPackagesList(token, mockVehicle, []);
 
