@@ -85,6 +85,8 @@ model Policy {
   plan             InsurancePlan @relation(fields: [planId], references: [id])
   policyNumber     String?
   status           String    @default("pending")
+  step             String?   // ขั้นตอนปัจจุบัน เช่น "กำลังตรวจสอบเอกสาร"
+  remark           String?   // หมายเหตุหรือสาเหตุที่ติดปัญหา
   premiumAmount    Decimal   @db.Decimal(12, 2)
   commissionAmount Decimal   @db.Decimal(12, 2)
   createdAt        DateTime  @default(now())

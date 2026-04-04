@@ -5,37 +5,36 @@ import Link from 'next/link';
 
 export default function TaskTracking() {
   const [filter, setFilter] = useState('all');
+  const [tasks, setTasks] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const tasks = [
-    { 
-      id: 'T001', customer: 'คุณวิชัย เจริญยนต์', brand: 'Toyota Camry 2024', 
-      status: 'issued', date: 'วันนี้ 09:15', premium: 18500, policyNo: 'POL-12345678',
-      planName: 'Allianz Care (ชั้น 1)'
-    },
-    { 
-      id: 'T002', customer: 'คุณสมชาย รักไทย', brand: 'Honda Civic 2023', 
-      status: 'pending', date: 'วันนี้ 11:30', premium: 15900,
-      step: 'กำลังตรวจสอบรูปถ่ายรถ (Step 2/3)',
-      planName: 'Allianz Safe (ชั้น 2+)'
-    },
-    { 
-      id: 'T003', customer: 'คุณมาลี มีสุข', brand: 'Mazda 2 (2022)', 
-      status: 'rejected', date: 'วานนี้ 14:00', premium: 6900,
-      reason: 'รูปภาพเลขตัวถัง (VIN) ไม่ชัดเจน กรุณาถ่ายใหม่',
-      planName: 'ประกันชั้น 3+ (Value Save)'
-    },
-    { 
-      id: 'T004', customer: 'คุณประเสริฐ ปลอดภัย', brand: 'Isuzu D-Max 2024', 
-      status: 'pending', date: 'วานนี้ 10:00', premium: 19200,
-      step: 'รอผลการพิจารณาจาก Allianz (Underwriting)',
-      planName: 'Allianz Care (ชั้น 1)'
-    },
-    { 
-      id: 'T005', customer: 'คุณสุนิสา มั่นคง', brand: 'Toyota Hilux Revo 2023', 
-      status: 'issued', date: '2 เม.ย. 15:30', premium: 645.21, policyNo: 'CMI-99887766',
-      planName: 'พ.ร.บ. รถยนต์ (Allianz CMI)'
-    }
-  ];
+  useEffect(() => {
+    fetch('/api/products/contracts/history')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          const mappedTasks = data.map((p: any) => ({
+            id: p.id.slice(-6).toUpperCase(),
+            dbId: p.id,
+            customer: p.quotation?.customerName || 'N/A',
+            brand: `${p.quotation?.vehicleBrand} ${p.quotation?.vehicleModel}`,
+            status: p.status === 'SUCCESS' ? 'issued' : p.status === 'rejected' ? 'rejected' : 'pending',
+            date: new Date(p.createdAt).toLocaleDateString('th-TH'),
+            premium: Number(p.premiumAmount),
+            policyNo: p.policyNumber,
+            planName: p.plan?.planName,
+            step: p.step,
+            reason: p.remark
+          }));
+          setTasks(mappedTasks);
+        }
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('Fetch tasks failed:', err);
+        setLoading(false);
+      });
+  }, []);
 
   const filteredTasks = filter === 'all' ? tasks : tasks.filter(t => t.status === filter);
 
@@ -75,16 +74,20 @@ export default function TaskTracking() {
         <div className="mobile-header" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <Link href="/" style={{ color: 'white', fontSize: '1.5rem', textDecoration: 'none' }}>←</Link>
           <h1 style={{ fontSize: '1.25rem', color: 'white', margin: 0 }}>ติดตามสถานะงาน</h1>
+        <div className="desktop-only" style={{ marginBottom: '1.5rem' }}>
+          <h2 style={{ fontSize: '1.5rem' }}>รายการงานที่รอดำเนินการ</h2>
+          <p className="text-muted">ตรวจสอบสถานะการพิจารณาและออกกรมธรรม์</p>
         </div>
-      </div>
 
-      <div className="desktop-only" style={{ marginBottom: '1.5rem' }}>
-        <h2 style={{ fontSize: '1.5rem' }}>รายการงานที่รอดำเนินการ</h2>
-        <p className="text-muted">ตรวจสอบสถานะการพิจารณาและออกกรมธรรม์</p>
-      </div>
+        {loading ? (
+          <div style={{ padding: '4rem', textAlign: 'center', color: '#666' }}>กำลังโหลดข้อมูลรายการงาน...</div>
+        ) : (
+          <div style={{ marginBottom: '2rem' }}>
+            {/* Filter Tabs */}
+        ...
+          </div>
+        )}
 
-      <div style={{ marginBottom: '2rem' }}>
-        {/* Filter Tabs */}
         <div className="card" style={{ display: 'flex', padding: '0.4rem', gap: '0.25rem', background: '#e9ecef', borderRadius: '4px', marginBottom: '1.5rem', border: 'none' }}>
           {[
             { id: 'all', label: 'ทั้งหมด' },
