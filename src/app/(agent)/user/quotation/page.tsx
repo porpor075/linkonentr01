@@ -207,13 +207,13 @@ export default function QuotationJourney() {
             </div>
           )}
 
-          {step === 3 && (
+          {step === 3 && addressData && addressData[selectedProvinceId] && (
             <div style={{ display: 'grid', gap: '1.5rem' }}>
               <h3 style={{ fontSize: '1.1rem' }}>📋 ยืนยันข้อมูลสุดท้าย</h3>
               <div style={{ background: '#f8f9fa', padding: '1.5rem', borderRadius: '12px', border: '1px solid #eee' }}>
                 <p><strong>ผู้เอาประกัน:</strong> {formData.insured.firstName} {formData.insured.lastName}</p>
                 <p><strong>เลขบัตรประชาชน:</strong> {formData.insured.idCard}</p>
-                <p><strong>ที่อยู่:</strong> {formData.insured.addressLine1} {currentSub?.name} {addressData[selectedProvinceId].districts[selectedDistrictId].name} {addressData[selectedProvinceId].name} {currentSub?.zipcode}</p>
+                <p><strong>ที่อยู่:</strong> {formData.insured.addressLine1} {currentSub?.name} {addressData[selectedProvinceId]?.districts[selectedDistrictId]?.name} {addressData[selectedProvinceId]?.name} {currentSub?.zipcode}</p>
               </div>
               <div style={{ display: 'flex', gap: '1rem' }}>
                 <button onClick={() => setStep(2)} className="btn-secondary" style={{ flex: 1, borderRadius: '50px', padding: '14px', height: '50px' }}>ย้อนกลับ</button>
