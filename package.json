@@ -10,7 +10,8 @@
     "postinstall": "npx prisma generate",
     "seed:allianz": "tsx seed-allianz.js",
     "seed:insurers": "tsx seed-insurers.js",
-    "seed:products": "tsx seed-products.js"
+    "seed:products": "tsx seed-products.js",
+    "seed:sales": "tsx seed-mock-sales.js"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.6.0",
