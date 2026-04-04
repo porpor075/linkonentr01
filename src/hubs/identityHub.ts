@@ -20,6 +20,20 @@ export class IdentityHub {
     // จัดการข้อมูล Role: ถ้าส่งมาเป็น Array ให้เชื่อมด้วยคอมม่า ถ้าเป็น String ให้ใช้ค่านั้นเลย
     const rolesString = Array.isArray(data.role) ? data.role.join(',') : data.role;
 
+    // ถ้ามี ID มาด้วย ให้ทำการค้นหาและอัปเดตผ่าน ID
+    if (data.id) {
+      return await prisma.user.update({
+        where: { id: data.id },
+        data: {
+          fullName: data.fullName,
+          role: rolesString,
+          tier: data.tier || undefined, // อัปเดตเฉพาะที่มีค่าส่งมา
+          isActive: data.isActive !== undefined ? data.isActive : undefined
+        }
+      });
+    }
+
+    // กรณีไม่มี ID (เช่น การสร้าง User ใหม่) ให้ใช้ Upsert ผ่าน Username เหมือนเดิม
     return await prisma.user.upsert({
       where: { username: data.username },
       update: {
