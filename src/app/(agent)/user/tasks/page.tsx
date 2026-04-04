@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 
 export default function TaskTracking() {
@@ -50,7 +50,6 @@ export default function TaskTracking() {
       const data = await res.json();
       if (data.success) {
         alert('ส่งคำขอยกเลิกไปที่ Allianz สำเร็จ');
-        // ในระบบจริงควรโหลดข้อมูลใหม่: window.location.reload();
       } else {
         alert('ไม่สามารถยกเลิกได้: ' + (data.error?.message || 'Unknown error'));
       }
@@ -69,159 +68,126 @@ export default function TaskTracking() {
   };
 
   return (
-    <main>
-      <div className="mobile-only">
-        <div className="mobile-header" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <Link href="/" style={{ color: 'white', fontSize: '1.5rem', textDecoration: 'none' }}>←</Link>
-          <h1 style={{ fontSize: '1.25rem', color: 'white', margin: 0 }}>ติดตามสถานะงาน</h1>
-        <div className="desktop-only" style={{ marginBottom: '1.5rem' }}>
-          <h2 style={{ fontSize: '1.5rem' }}>รายการงานที่รอดำเนินการ</h2>
-          <p className="text-muted">ตรวจสอบสถานะการพิจารณาและออกกรมธรรม์</p>
-        </div>
+    <main style={{ padding: '20px' }}>
+      <header style={{ marginBottom: '1.5rem' }}>
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>รายการงานที่รอดำเนินการ</h2>
+        <p style={{ color: '#666' }}>ตรวจสอบสถานะการพิจารณาและออกกรมธรรม์</p>
+      </header>
 
-        {loading ? (
-          <div style={{ padding: '4rem', textAlign: 'center', color: '#666' }}>กำลังโหลดข้อมูลรายการงาน...</div>
-        ) : (
-          <div style={{ marginBottom: '2rem' }}>
-            {/* Filter Tabs */}
-        ...
+      {loading ? (
+        <div style={{ padding: '4rem', textAlign: 'center', color: '#666' }}>กำลังโหลดข้อมูลรายการงาน...</div>
+      ) : (
+        <div style={{ marginBottom: '2rem' }}>
+          {/* Filter Tabs */}
+          <div className="card" style={{ display: 'flex', padding: '0.4rem', gap: '0.25rem', background: '#f1f3f5', borderRadius: '8px', marginBottom: '1.5rem', border: 'none' }}>
+            {[
+              { id: 'all', label: 'ทั้งหมด' },
+              { id: 'pending', label: 'รอดำเนินการ' },
+              { id: 'issued', label: 'อนุมัติ' },
+              { id: 'rejected', label: 'ติดปัญหา' }
+            ].map((f) => (
+              <button 
+                key={f.id}
+                onClick={() => setFilter(f.id)}
+                style={{
+                  flex: 1, padding: '0.6rem', border: 'none', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 'bold',
+                  background: filter === f.id ? 'white' : 'transparent',
+                  boxShadow: filter === f.id ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                  color: filter === f.id ? '#006aff' : '#666',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+              >
+                {f.label}
+              </button>
+            ))}
           </div>
-        )}
 
-        <div className="card" style={{ display: 'flex', padding: '0.4rem', gap: '0.25rem', background: '#e9ecef', borderRadius: '4px', marginBottom: '1.5rem', border: 'none' }}>
-          {[
-            { id: 'all', label: 'ทั้งหมด' },
-            { id: 'pending', label: 'รอดำเนินการ' },
-            { id: 'issued', label: 'อนุมัติ' },
-            { id: 'rejected', label: 'ติดปัญหา' }
-          ].map((f) => (
-            <button 
-              key={f.id}
-              onClick={() => setFilter(f.id)}
-              style={{
-                flex: 1, padding: '0.6rem', border: 'none', borderRadius: '4px', fontSize: '0.85rem', fontWeight: 'bold',
-                background: filter === f.id ? 'white' : 'transparent',
-                boxShadow: filter === f.id ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-                color: filter === f.id ? 'var(--zoho-primary)' : 'var(--zoho-text-muted)',
-                cursor: 'pointer',
-                transition: 'all 0.2s'
-              }}
-            >
-              {f.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Task List / Table */}
-        <div className="desktop-only">
-          <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-              <thead style={{ background: '#f8f9fa', borderBottom: '1px solid var(--zoho-border)' }}>
-                <tr>
-                  <th style={{ padding: '1rem' }}>ID / วันที่</th>
-                  <th style={{ padding: '1rem' }}>ลูกค้า / ข้อมูลรถ</th>
-                  <th style={{ padding: '1rem' }}>สถานะ</th>
-                  <th style={{ padding: '1rem' }}>เบี้ยประกัน</th>
-                  <th style={{ padding: '1rem', textAlign: 'right' }}>จัดการ</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredTasks.map((task) => (
-                  <tr key={task.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
-                    <td style={{ padding: '1.25rem' }}>
-                      <p style={{ fontWeight: 'bold' }}>{task.id}</p>
-                      <p className="text-muted" style={{ fontSize: '0.75rem' }}>{task.date}</p>
-                    </td>
-                    <td style={{ padding: '1.25rem' }}>
-                      <p style={{ fontWeight: '600', marginBottom: '2px' }}>{task.customer}</p>
-                      <p className="text-muted" style={{ fontSize: '0.8rem' }}>{task.brand} • <span style={{ color: '#006aff' }}>{task.planName}</span></p>
-                      {task.status === 'pending' && <p style={{ fontSize: '0.75rem', color: '#f39c12', marginTop: '4px' }}>⏳ {task.step}</p>}
-                    </td>
-                    <td style={{ padding: '1.25rem' }}>{getStatusBadge(task.status)}</td>
-                    <td style={{ padding: '1.25rem', fontWeight: 'bold', color: 'var(--zoho-accent)' }}>฿{task.premium?.toLocaleString()}</td>
-                    <td style={{ padding: '1.25rem', textAlign: 'right' }}>
-                       {task.status === 'issued' ? (
-                          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-                            <button className="btn btn-primary" style={{ fontSize: '0.75rem' }}>ส่ง E-Policy</button>
-                            <button 
-                              className="btn" 
-                              style={{ fontSize: '0.75rem', background: '#e03131', color: 'white' }}
-                              onClick={() => handleCancel(task.id, task.policyNo || "")}
-                            >
-                              ยกเลิก
-                            </button>
-                          </div>
-                       ) :
- task.status === 'rejected' ? (
-                          <button className="btn btn-primary" style={{ fontSize: '0.75rem', background: 'var(--zoho-danger)' }}>แก้ไขข้อมูล</button>
-                       ) : (
-                          <button className="btn btn-outline" style={{ fontSize: '0.75rem' }}>แชทสอบถาม</button>
-                       )}
-                    </td>
+          {/* Desktop View */}
+          <div className="desktop-view">
+            <div className="card" style={{ padding: 0, overflow: 'hidden', border: '1px solid #eee', background: 'white', borderRadius: '12px' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                <thead style={{ background: '#f8f9fa', borderBottom: '1px solid #eee' }}>
+                  <tr>
+                    <th style={{ padding: '1rem' }}>ID / วันที่</th>
+                    <th style={{ padding: '1rem' }}>ลูกค้า / ข้อมูลรถ</th>
+                    <th style={{ padding: '1rem' }}>สถานะ</th>
+                    <th style={{ padding: '1rem' }}>เบี้ยประกัน</th>
+                    <th style={{ padding: '1rem', textAlign: 'right' }}>จัดการ</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Mobile List */}
-        <div className="mobile-only">
-          {filteredTasks.map((task) => (
-            <div key={task.id} className="card" style={{ padding: '1.25rem', borderLeft: `5px solid ${task.status === 'issued' ? 'var(--zoho-success)' : task.status === 'pending' ? 'var(--zoho-warning)' : 'var(--zoho-danger)'}` }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                <div>
-                  <p className="text-muted" style={{ fontSize: '0.75rem' }}>{task.id} | {task.date}</p>
-                  <h3 style={{ fontSize: '1.1rem', marginTop: '0.25rem', marginBottom: '4px' }}>{task.customer}</h3>
-                  <p style={{ fontSize: '0.85rem', color: '#666', margin: 0 }}>{task.brand}</p>
-                  <p style={{ fontSize: '0.8rem', color: '#006aff', fontWeight: '500' }}>{task.planName}</p>
-                  {task.status === 'pending' && (
-                    <p style={{ fontSize: '0.75rem', color: '#f39c12', marginTop: '8px', background: '#fff9db', padding: '4px 8px', borderRadius: '4px', display: 'inline-block' }}>
-                      ⏳ {task.step}
-                    </p>
+                </thead>
+                <tbody>
+                  {filteredTasks.length === 0 ? (
+                    <tr><td colSpan={5} style={{ padding: '3rem', textAlign: 'center', color: '#999' }}>ไม่พบรายการงาน</td></tr>
+                  ) : (
+                    filteredTasks.map((task) => (
+                      <tr key={task.dbId} style={{ borderBottom: '1px solid #f5f5f5' }}>
+                        <td style={{ padding: '1.25rem' }}>
+                          <p style={{ fontWeight: 'bold', margin: 0 }}>{task.id}</p>
+                          <p style={{ fontSize: '0.75rem', color: '#999', margin: 0 }}>{task.date}</p>
+                        </td>
+                        <td style={{ padding: '1.25rem' }}>
+                          <p style={{ fontWeight: '600', marginBottom: '2px', margin: 0 }}>{task.customer}</p>
+                          <p style={{ fontSize: '0.8rem', color: '#666', margin: 0 }}>{task.brand} • <span style={{ color: '#006aff' }}>{task.planName}</span></p>
+                          {task.status === 'pending' && <p style={{ fontSize: '0.75rem', color: '#f39c12', marginTop: '4px', margin: 0 }}>⏳ {task.step}</p>}
+                          {task.status === 'rejected' && <p style={{ fontSize: '0.75rem', color: '#ff4d4f', marginTop: '4px', margin: 0 }}>❌ {task.reason}</p>}
+                        </td>
+                        <td style={{ padding: '1.25rem' }}>{getStatusBadge(task.status)}</td>
+                        <td style={{ padding: '1.25rem', fontWeight: 'bold', color: '#333' }}>฿{task.premium?.toLocaleString()}</td>
+                        <td style={{ padding: '1.25rem', textAlign: 'right' }}>
+                           {task.status === 'issued' ? (
+                              <button className="btn-primary" style={{ fontSize: '0.75rem', padding: '6px 12px', borderRadius: '4px' }}>E-Policy</button>
+                           ) : (
+                              <button className="btn-secondary" style={{ fontSize: '0.75rem', padding: '6px 12px', borderRadius: '4px' }}>รายละเอียด</button>
+                           )}
+                        </td>
+                      </tr>
+                    ))
                   )}
-                </div>
-                <div style={{ textAlign: 'right' }}>
-                  {getStatusBadge(task.status)}
-                  <p style={{ fontSize: '1rem', fontWeight: 'bold', marginTop: '0.75rem', color: 'var(--zoho-accent)' }}>฿{task.premium?.toLocaleString()}</p>
-                </div>
-              </div>
-
-              {task.status === 'rejected' && (
-                <div style={{ padding: '0.75rem', background: '#fff5f5', borderRadius: '4px', border: '1px solid #ffc9c9', marginBottom: '1rem' }}>
-                   <p style={{ fontSize: '0.8rem', color: 'var(--zoho-danger)' }}><strong>สาเหตุ:</strong> {task.reason}</p>
-                </div>
-              )}
-
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                 {task.status === 'issued' ? (
-                    <>
-                       <button className="btn btn-primary" style={{ flex: 2, fontSize: '0.8rem' }}>📦 ส่ง E-Policy</button>
-                       <button 
-                         className="btn" 
-                         style={{ flex: 1.5, fontSize: '0.8rem', background: '#e03131', color: 'white' }}
-                         onClick={() => handleCancel(task.id, task.policyNo || "")}
-                       >
-                         ยกเลิก
-                       </button>
-                    </>
-                 ) :
- task.status === 'rejected' ? (
-                    <button className="btn btn-primary" style={{ width: '100%', background: 'var(--zoho-danger)', fontSize: '0.8rem' }}>แก้ไขข้อมูลและส่งใหม่</button>
-                 ) : (
-                    <button className="btn btn-outline" style={{ width: '100%', fontSize: '0.8rem' }}>💬 สอบถาม (LINE)</button>
-                 )}
-              </div>
+                </tbody>
+              </table>
             </div>
-          ))}
-        </div>
-
-        {filteredTasks.length === 0 && (
-          <div className="card" style={{ textAlign: 'center', padding: '4rem' }}>
-            <p className="text-muted">ไม่พบรายการงานในหมวดหมู่นี้</p>
           </div>
-        )}
-      </div>
+
+          {/* Mobile View */}
+          <div className="mobile-view" style={{ display: 'none' }}>
+            {filteredTasks.map((task) => (
+              <div key={task.dbId} className="card" style={{ padding: '1.25rem', marginBottom: '1rem', borderLeft: `5px solid ${task.status === 'issued' ? '#2f9e44' : task.status === 'pending' ? '#f39c12' : '#e03131'}`, background: 'white', borderRadius: '12px', border: '1px solid #eee' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                  <div>
+                    <p style={{ fontSize: '0.75rem', color: '#999', margin: 0 }}>{task.id} | {task.date}</p>
+                    <h3 style={{ fontSize: '1.1rem', marginTop: '0.25rem', marginBottom: '4px' }}>{task.customer}</h3>
+                    <p style={{ fontSize: '0.85rem', color: '#666', margin: 0 }}>{task.brand}</p>
+                    <p style={{ fontSize: '0.8rem', color: '#006aff', fontWeight: '500', margin: 0 }}>{task.planName}</p>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    {getStatusBadge(task.status)}
+                    <p style={{ fontSize: '1rem', fontWeight: 'bold', marginTop: '0.75rem', color: '#333', margin: 0 }}>฿{task.premium?.toLocaleString()}</p>
+                  </div>
+                </div>
+                {task.status === 'pending' && (
+                  <p style={{ fontSize: '0.75rem', color: '#f39c12', marginTop: '8px', background: '#fff9db', padding: '4px 8px', borderRadius: '4px', display: 'inline-block' }}>⏳ {task.step}</p>
+                )}
+                {task.status === 'rejected' && (
+                  <div style={{ padding: '0.75rem', background: '#fff5f5', borderRadius: '4px', border: '1px solid #ffc9c9', marginTop: '1rem' }}>
+                     <p style={{ fontSize: '0.8rem', color: '#e03131', margin: 0 }}><strong>สาเหตุ:</strong> {task.reason}</p>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <style jsx>{`
+        .btn-primary { background: #006aff; color: white; border: none; cursor: pointer; font-weight: bold; }
+        .btn-secondary { background: #f8f9fa; color: #333; border: 1px solid #ddd; cursor: pointer; }
+        .card { background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+        @media (max-width: 768px) {
+          .desktop-view { display: none !important; }
+          .mobile-view { display: block !important; }
+        }
+      `}</style>
     </main>
   );
 }
