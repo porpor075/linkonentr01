@@ -1,5 +1,6 @@
 import { DataStore } from '../lib/store';
 import { PolicyHub } from './policyHub';
+import { prisma } from '../lib/prisma';
 
 export class AnalyticsHub {
   static getAllCommissions() { return DataStore.read<any>('commissions.json'); }
