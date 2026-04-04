@@ -12,24 +12,23 @@ export async function POST(request: Request) {
 
   try {
     const insurers = await BusinessHub.getInsurers();
+    console.log(`[RATES_API] Found ${insurers.length} insurers in DB`);
 
     const insurerPromises = insurers.map(async (insurer) => {
-      // ดึงแผนเฉพาะที่แอดมินเปิดใช้งานไว้ และกรองตามประเภท VMI/CMI
+      // ดึงแผนเฉพาะที่แอดมินเปิดใช้งานไว้
       const allProducts = await BusinessHub.getProducts(insurer.id);
-      const managedProducts = allProducts.filter((p: any) => {
-        if (!p.isActive) return false;
-        if (insuranceCategory === 'CMI') return p.planType === 'CMI';
-        return p.planType !== 'CMI';
-      });
+      const managedProducts = allProducts.filter((p: any) => p.isActive);
       
+      console.log(`[RATES_API] Insurer: ${insurer.nameEn}, Total Active Plans: ${managedProducts.length}`);
+
       if (insurer.integrationType === 'API' && insurer.nameEn.toLowerCase().includes('allianz')) {
+        // ... (โค้ด Allianz เหมือนเดิม)
         try {
           const accessToken = await getAllianzAccessToken();
           if (!accessToken) throw new Error('No Access Token');
 
-          // --- แผนที่ต้องการเช็ค ---
           const targetPlans = (insuranceCategory === 'CMI' || searchMode === 'list') 
-            ? managedProducts 
+            ? managedProducts.filter(p => (insuranceCategory === 'CMI' ? p.planType === 'CMI' : p.planType !== 'CMI'))
             : managedProducts.filter((p: any) => p.planCode === body.planType);
 
           const quotePromises = targetPlans.map(async (product: any) => {
@@ -51,14 +50,6 @@ export async function POST(request: Request) {
                 const price = pkg.premium?.grossPremium || cov.premium?.grossPremium || null;
 
                 if (price) {
-                  // รายละเอียดความคุ้มครองพื้นฐานสำหรับ CMI (กรณี API ไม่คืนมา)
-                  const cmiDefaultCoverages = [
-                    { code: 'DEATH', title: 'เสียชีวิต/ทุพพลภาพถาวร', value: '500,000' },
-                    { code: 'MEDICAL', title: 'ค่ารักษาพยาบาล (ตามจริง)', value: '80,000' },
-                    { code: 'COMPENSATION', title: 'เงินชดเชยรายวัน (ผู้ป่วยใน)', value: '200' },
-                    { code: 'TOTAL_LIMIT', title: 'วงเงินความคุ้มครองสูงสุด', value: '504,000' }
-                  ];
-
                   return {
                     id: `AL-${cov.code}-${Date.now()}-${Math.random()}`,
                     name: insurer.nameTh,
@@ -71,7 +62,7 @@ export async function POST(request: Request) {
                     type: insuranceCategory,
                     isApi: true,
                     isAvailable: true,
-                    coverages: (cov.coverageItems ? (Array.isArray(cov.coverageItems[0]) ? cov.coverageItems[0] : cov.coverageItems) : (insuranceCategory === 'CMI' ? cmiDefaultCoverages : [])).map((i: any) => ({ 
+                    coverages: (cov.coverageItems ? (Array.isArray(cov.coverageItems[0]) ? cov.coverageItems[0] : cov.coverageItems) : []).map((i: any) => ({ 
                       code: i.code, 
                       title: i.name || i.title, 
                       value: i.sumInsured !== undefined && i.sumInsured !== null ? i.sumInsured.toLocaleString() : (i.value || 'N/A') 
@@ -79,26 +70,30 @@ export async function POST(request: Request) {
                   };
                 }
               }
-            } catch (e) { console.error(`Error fetching ${product.planCode}`, e); }
-            
+            } catch (e) { console.error(`Error fetching Allianz ${product.planCode}`, e); }
             return null;
           });
 
           return await Promise.all(quotePromises);
         } catch (authErr) {
-          console.error('Allianz Auth Failed, skipping Allianz plans', authErr);
+          console.error('Allianz Auth Failed', authErr);
           return [];
         }
 
-      } else if (insurer.integrationType === 'MANUAL') {
+      } else {
+        // สำหรับบริษัทอื่นๆ (MANUAL)
         const manualPlans: any[] = [];
         managedProducts.forEach((p: any) => {
-          const isMatchCategory = (insuranceCategory === 'CMI' && p.planType === 'CMI') || (insuranceCategory === 'VMI' && p.planType !== 'CMI');
+          // ตรวจสอบประเภท (VMI/CMI)
+          const isCMI = insuranceCategory === 'CMI';
+          const isMatchCategory = (isCMI && p.planType === 'CMI') || (!isCMI && p.planType !== 'CMI');
+          
+          // ตรวจสอบรหัสแผน (ถ้าไม่ได้หาแบบลิสต์)
           const isMatchSearch = searchMode === 'list' || p.planCode === body.planType || p.planType === body.planType;
 
           if (isMatchCategory && isMatchSearch) {
             manualPlans.push({
-              id: `MN-${p.id}`,
+              id: `MN-${p.id}-${Date.now()}`,
               name: insurer.nameTh,
               logoUrl: insurer.logoUrl,
               planType: p.planType,
@@ -109,7 +104,7 @@ export async function POST(request: Request) {
               type: insuranceCategory,
               coverages: [
                 { title: 'ความรับผิดชอบบุคคลภายนอก', value: '500,000' },
-                { title: 'ความเสียหายต่อตัวรถยนต์', value: p.planType === 'VMI1' ? 'ตามทุนประกัน' : 'N/A' },
+                { title: 'ความเสียหายต่อตัวรถยนต์', value: p.planType === 'VMI1' ? 'ตามทุนประกัน' : 'คุ้มครอง' },
                 { title: 'อุบัติเหตุส่วนบุคคล (RY01)', value: '100,000' },
                 { title: 'การประกันตัวผู้ขับขี่ (RY03)', value: '200,000' }
               ],
@@ -120,7 +115,6 @@ export async function POST(request: Request) {
         });
         return manualPlans;
       }
-      return [];
     });
 
     const nestedResults = await Promise.all(insurerPromises);

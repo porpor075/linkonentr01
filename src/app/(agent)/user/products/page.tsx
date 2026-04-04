@@ -49,8 +49,8 @@ export default function ConsistentProductSearch() {
         }
       });
 
-    // Fetch Plan Types (from Admin)
-    fetch('/api/admin/products?insurerId=1')
+    // Fetch Plan Types (จากทุกบริษัท)
+    fetch('/api/admin/products')
       .then(async res => {
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         return res.json();
@@ -59,7 +59,11 @@ export default function ConsistentProductSearch() {
         if (Array.isArray(data)) {
           const activePlans = data.filter(p => p.isActive);
           setAvailablePlanTypes(activePlans);
-          if (activePlans.length > 0) setVehicle(prev => ({ ...prev, planType: activePlans[0].planCode }));
+          if (activePlans.length > 0) {
+            // ล็อกค่า VMI1 เป็นค่าเริ่มต้นถ้ามี
+            const defaultPlan = activePlans.find(p => p.planCode === 'VMI1') || activePlans[0];
+            setVehicle(prev => ({ ...prev, planType: defaultPlan.planCode }));
+          }
         }
       })
       .catch(err => console.error('Failed to fetch available plans:', err));
