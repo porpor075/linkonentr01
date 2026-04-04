@@ -9,10 +9,9 @@ export async function GET() {
   if (!prisma) return NextResponse.json([]);
 
   try {
-    const where = session.role.includes('admin') ? {} : { userId: session.id };
-    
+    // แก้ไข Type Error: ใช้เงื่อนไขที่ Prisma เข้าใจได้ง่ายขึ้น
     const policies = await prisma.policy.findMany({
-      where,
+      where: session.role.includes('admin') ? {} : { quotation: { userId: session.id } },
       include: {
         quotation: true,
         plan: {
