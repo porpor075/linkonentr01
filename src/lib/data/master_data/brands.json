@@ -1,0 +1,606 @@
+[
+  {
+    "code": "49",
+    "name": "AEOLUS"
+  },
+  {
+    "code": "273",
+    "name": "AION"
+  },
+  {
+    "code": "54",
+    "name": "ALEOUS"
+  },
+  {
+    "code": "110",
+    "name": "ALFA ROMEO"
+  },
+  {
+    "code": "82",
+    "name": "ASTON MARTIN"
+  },
+  {
+    "code": "1",
+    "name": "AUDI"
+  },
+  {
+    "code": "62",
+    "name": "AUSTIN"
+  },
+  {
+    "code": "271",
+    "name": "AVATR"
+  },
+  {
+    "code": "194",
+    "name": "BENELLI"
+  },
+  {
+    "code": "83",
+    "name": "BENTLEY"
+  },
+  {
+    "code": "3",
+    "name": "BMW"
+  },
+  {
+    "code": "248",
+    "name": "BUELL"
+  },
+  {
+    "code": "139",
+    "name": "BUICK"
+  },
+  {
+    "code": "266",
+    "name": "BYD"
+  },
+  {
+    "code": "84",
+    "name": "CADILLAC"
+  },
+  {
+    "code": "173",
+    "name": "CAMC"
+  },
+  {
+    "code": "114",
+    "name": "CANTER"
+  },
+  {
+    "code": "153",
+    "name": "CAPACITY"
+  },
+  {
+    "code": "116",
+    "name": "CATERPILLAR"
+  },
+  {
+    "code": "133",
+    "name": "CHERY"
+  },
+  {
+    "code": "4",
+    "name": "CHEVROLET"
+  },
+  {
+    "code": "176",
+    "name": "CHINNARAJE"
+  },
+  {
+    "code": "5",
+    "name": "CHRYSLER"
+  },
+  {
+    "code": "6",
+    "name": "CITROEN"
+  },
+  {
+    "code": "7",
+    "name": "COMBI"
+  },
+  {
+    "code": "8",
+    "name": "DAEWOO"
+  },
+  {
+    "code": "9",
+    "name": "DAIHATSU"
+  },
+  {
+    "code": "90",
+    "name": "DAIMLER"
+  },
+  {
+    "code": "10",
+    "name": "DATSUN"
+  },
+  {
+    "code": "272",
+    "name": "DEEPAL"
+  },
+  {
+    "code": "280",
+    "name": "DENZA"
+  },
+  {
+    "code": "185",
+    "name": "DEVA"
+  },
+  {
+    "code": "138",
+    "name": "DFM"
+  },
+  {
+    "code": "159",
+    "name": "DFSK"
+  },
+  {
+    "code": "11",
+    "name": "DODGE"
+  },
+  {
+    "code": "240",
+    "name": "DUCATI"
+  },
+  {
+    "code": "77",
+    "name": "FERRARI"
+  },
+  {
+    "code": "12",
+    "name": "FIAT"
+  },
+  {
+    "code": "13",
+    "name": "FORD"
+  },
+  {
+    "code": "178",
+    "name": "FOTON"
+  },
+  {
+    "code": "53",
+    "name": "FUSO"
+  },
+  {
+    "code": "180",
+    "name": "FUTIAN"
+  },
+  {
+    "code": "281",
+    "name": "GAC"
+  },
+  {
+    "code": "89",
+    "name": "GMC"
+  },
+  {
+    "code": "195",
+    "name": "GOLDEN DRAGON"
+  },
+  {
+    "code": "177",
+    "name": "GPX"
+  },
+  {
+    "code": "181",
+    "name": "GREAT WALL"
+  },
+  {
+    "code": "276",
+    "name": "GWM Tank"
+  },
+  {
+    "code": "230",
+    "name": "HAVAL"
+  },
+  {
+    "code": "137",
+    "name": "HELLMAN"
+  },
+  {
+    "code": "14",
+    "name": "HINO"
+  },
+  {
+    "code": "15",
+    "name": "HOLDEN"
+  },
+  {
+    "code": "16",
+    "name": "HONDA"
+  },
+  {
+    "code": "52",
+    "name": "HUANGHO"
+  },
+  {
+    "code": "100",
+    "name": "HUMMER"
+  },
+  {
+    "code": "17",
+    "name": "HYUNDAI"
+  },
+  {
+    "code": "161",
+    "name": "INFINITI"
+  },
+  {
+    "code": "18",
+    "name": "ISUZU"
+  },
+  {
+    "code": "283",
+    "name": "JAECOO"
+  },
+  {
+    "code": "19",
+    "name": "JAGUAR"
+  },
+  {
+    "code": "121",
+    "name": "JCB"
+  },
+  {
+    "code": "48",
+    "name": "JEEP"
+  },
+  {
+    "code": "179",
+    "name": "JIANHUI"
+  },
+  {
+    "code": "60",
+    "name": "JOHNDEER"
+  },
+  {
+    "code": "143",
+    "name": "KABA"
+  },
+  {
+    "code": "122",
+    "name": "KANCIL"
+  },
+  {
+    "code": "128",
+    "name": "KATO"
+  },
+  {
+    "code": "21",
+    "name": "KAWASAKI"
+  },
+  {
+    "code": "44",
+    "name": "KIA"
+  },
+  {
+    "code": "232",
+    "name": "KINGLONG"
+  },
+  {
+    "code": "64",
+    "name": "KOMATSU"
+  },
+  {
+    "code": "140",
+    "name": "KUBOTA"
+  },
+  {
+    "code": "101",
+    "name": "LAMBORGHINI"
+  },
+  {
+    "code": "22",
+    "name": "LAND ROVER"
+  },
+  {
+    "code": "45",
+    "name": "LEXUS"
+  },
+  {
+    "code": "165",
+    "name": "LEYLAND"
+  },
+  {
+    "code": "157",
+    "name": "LML"
+  },
+  {
+    "code": "79",
+    "name": "LOTUS"
+  },
+  {
+    "code": "236",
+    "name": "MAN"
+  },
+  {
+    "code": "86",
+    "name": "MASERATI"
+  },
+  {
+    "code": "172",
+    "name": "MAXUS"
+  },
+  {
+    "code": "155",
+    "name": "MAYBACH"
+  },
+  {
+    "code": "24",
+    "name": "MAZDA"
+  },
+  {
+    "code": "25",
+    "name": "MERCEDES-BENZ"
+  },
+  {
+    "code": "76",
+    "name": "MG"
+  },
+  {
+    "code": "97",
+    "name": "MINI"
+  },
+  {
+    "code": "26",
+    "name": "MITSUBISHI"
+  },
+  {
+    "code": "125",
+    "name": "MITSUOKA"
+  },
+  {
+    "code": "134",
+    "name": "MORRIS"
+  },
+  {
+    "code": "126",
+    "name": "NAZA"
+  },
+  {
+    "code": "237",
+    "name": "NEOPLAN"
+  },
+  {
+    "code": "265",
+    "name": "NETA"
+  },
+  {
+    "code": "27",
+    "name": "NISSAN"
+  },
+  {
+    "code": "135",
+    "name": "OLDSMOBILE"
+  },
+  {
+    "code": "28",
+    "name": "OPEL"
+  },
+  {
+    "code": "257",
+    "name": "ORA"
+  },
+  {
+    "code": "154",
+    "name": "OTTAWA"
+  },
+  {
+    "code": "112",
+    "name": "PANAS"
+  },
+  {
+    "code": "120",
+    "name": "PERODUA"
+  },
+  {
+    "code": "29",
+    "name": "PEUGEOT"
+  },
+  {
+    "code": "285",
+    "name": "POER"
+  },
+  {
+    "code": "130",
+    "name": "POLARSUN"
+  },
+  {
+    "code": "136",
+    "name": "PONTIAC"
+  },
+  {
+    "code": "65",
+    "name": "PORSCHE"
+  },
+  {
+    "code": "117",
+    "name": "PROTON"
+  },
+  {
+    "code": "144",
+    "name": "RCK"
+  },
+  {
+    "code": "188",
+    "name": "RELY"
+  },
+  {
+    "code": "32",
+    "name": "RENAULT"
+  },
+  {
+    "code": "193",
+    "name": "REO"
+  },
+  {
+    "code": "224",
+    "name": "ROEWE"
+  },
+  {
+    "code": "104",
+    "name": "ROLLS-ROYCE"
+  },
+  {
+    "code": "33",
+    "name": "ROVER"
+  },
+  {
+    "code": "34",
+    "name": "SAAB"
+  },
+  {
+    "code": "184",
+    "name": "SBY"
+  },
+  {
+    "code": "205",
+    "name": "SCANIA"
+  },
+  {
+    "code": "129",
+    "name": "SCANNIA"
+  },
+  {
+    "code": "35",
+    "name": "SEAT"
+  },
+  {
+    "code": "145",
+    "name": "SEMIT"
+  },
+  {
+    "code": "183",
+    "name": "SHINERAY"
+  },
+  {
+    "code": "70",
+    "name": "SKODA"
+  },
+  {
+    "code": "105",
+    "name": "SMART"
+  },
+  {
+    "code": "146",
+    "name": "SMM"
+  },
+  {
+    "code": "160",
+    "name": "SOKON"
+  },
+  {
+    "code": "58",
+    "name": "SSANGYONG"
+  },
+  {
+    "code": "149",
+    "name": "STALLION"
+  },
+  {
+    "code": "36",
+    "name": "SUBARU"
+  },
+  {
+    "code": "169",
+    "name": "SUNBEAM"
+  },
+  {
+    "code": "206",
+    "name": "SUNLONG"
+  },
+  {
+    "code": "38",
+    "name": "SUZUKI"
+  },
+  {
+    "code": "131",
+    "name": "Spyker"
+  },
+  {
+    "code": "118",
+    "name": "TADANO"
+  },
+  {
+    "code": "127",
+    "name": "TATA"
+  },
+  {
+    "code": "267",
+    "name": "TESLA"
+  },
+  {
+    "code": "39",
+    "name": "TOYOTA"
+  },
+  {
+    "code": "107",
+    "name": "TR"
+  },
+  {
+    "code": "151",
+    "name": "TRACTOR"
+  },
+  {
+    "code": "46",
+    "name": "TRAILER"
+  },
+  {
+    "code": "88",
+    "name": "TRIUMPH"
+  },
+  {
+    "code": "252",
+    "name": "TUKTUK"
+  },
+  {
+    "code": "174",
+    "name": "UD"
+  },
+  {
+    "code": "123",
+    "name": "VALIANT"
+  },
+  {
+    "code": "57",
+    "name": "VESPA"
+  },
+  {
+    "code": "40",
+    "name": "VOLKSWAGEN"
+  },
+  {
+    "code": "42",
+    "name": "VOLVO"
+  },
+  {
+    "code": "217",
+    "name": "WILLYS"
+  },
+  {
+    "code": "115",
+    "name": "WULING"
+  },
+  {
+    "code": "287",
+    "name": "XPENG"
+  },
+  {
+    "code": "43",
+    "name": "YAMAHA"
+  },
+  {
+    "code": "274",
+    "name": "ZEEKR"
+  },
+  {
+    "code": "156",
+    "name": "รถพ่วง"
+  },
+  {
+    "code": "231",
+    "name": "รถอื่นๆ"
+  }
+]
