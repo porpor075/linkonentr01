@@ -254,15 +254,20 @@ export default function ConsistentProductSearch() {
                       <td style={{ padding: '1rem' }}>
                         <p style={{ fontWeight: 'bold', margin: 0, color: '#006aff' }}>{plan.planName}</p>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                           <small style={{ color: '#888' }}>Allianz Ayudhya • {plan.repairType || 'ซ่อมตามแผน'}</small>
+                           {plan.logoUrl && <img src={plan.logoUrl} alt={plan.name} style={{ height: '16px', objectFit: 'contain' }} />}
+                           <small style={{ color: '#888' }}>{plan.name} • {plan.repairType || 'ซ่อมตามแผน'}</small>
                            <button onClick={() => setExpandedIdx(expandedIdx === idx ? null : idx)} style={{ background: 'none', border: 'none', color: '#006aff', fontSize: '0.75rem', cursor: 'pointer', padding: 0 }}>
                              {expandedIdx === idx ? '▲ ปิดรายละเอียด' : '▼ ดูความคุ้มครอง'}
                            </button>
                         </div>
                       </td>
-                      <td style={{ padding: '1rem', fontWeight: 'bold' }}>฿{plan.confirmedSumInsured?.toLocaleString()}</td>
+                      <td style={{ padding: '1rem', fontWeight: 'bold' }}>
+                        {typeof plan.confirmedSumInsured === 'number' 
+                          ? `฿${plan.confirmedSumInsured.toLocaleString()}` 
+                          : plan.confirmedSumInsured}
+                      </td>
                       <td style={{ padding: '1rem', textAlign: 'right' }}>
-                        <p style={{ fontSize: '1.2rem', fontWeight: '800', color: '#ff4d4f', margin: 0 }}>฿{plan.price?.toLocaleString() || '0'}</p>
+                        <p style={{ fontSize: '1.2rem', fontWeight: '800', color: '#ff4d4f', margin: 0 }}>฿{Number(plan.price).toLocaleString()}</p>
                       </td>
                       <td style={{ padding: '1rem', textAlign: 'right' }}>
                         <button 
