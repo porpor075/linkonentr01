@@ -58,6 +58,7 @@ export default function ConsistentHistoryPage() {
               <th style={{ padding: '1rem', fontSize: '0.85rem', color: '#666' }}>เลขที่กรมธรรม์</th>
               <th style={{ padding: '1rem', fontSize: '0.85rem', color: '#666' }}>ชื่อลูกค้า</th>
               <th style={{ padding: '1rem', fontSize: '0.85rem', color: '#666' }}>บริษัท / แผน</th>
+              <th style={{ padding: '1rem', fontSize: '0.85rem', color: '#666', textAlign: 'right' }}>ทุนประกัน</th>
               <th style={{ padding: '1rem', fontSize: '0.85rem', color: '#666', textAlign: 'right' }}>เบี้ยประกัน</th>
               <th style={{ padding: '1rem', fontSize: '0.85rem', color: '#666', textAlign: 'center' }}>สถานะ</th>
               <th style={{ padding: '1rem', fontSize: '0.85rem', color: '#666', textAlign: 'right' }}>จัดการ</th>
@@ -73,7 +74,12 @@ export default function ConsistentHistoryPage() {
                   <p style={{ margin: 0, fontSize: '0.9rem' }}>{policy.plan?.insurer?.nameTh || 'Allianz'}</p>
                   <small style={{ color: '#888' }}>{policy.plan?.planName}</small>
                 </td>
-                <td style={{ padding: '1rem', textAlign: 'right', fontWeight: 'bold' }}>฿{(policy.premiumAmount || 0).toLocaleString()}</td>
+                <td style={{ padding: '1rem', textAlign: 'right', color: '#666' }}>
+                  ฿{Number(policy.quotation?.sumInsured || 0).toLocaleString()}
+                </td>
+                <td style={{ padding: '1rem', textAlign: 'right', fontWeight: 'bold', color: '#006aff' }}>
+                  ฿{Number(policy.premiumAmount || 0).toLocaleString()}
+                </td>
                 <td style={{ padding: '1rem', textAlign: 'center' }}>
                   <span className={`badge ${policy.status === 'SUCCESS' ? 'badge-success' : 'badge-warning'}`}>
                     {policy.status === 'SUCCESS' ? 'สำเร็จ' : 'รอดำเนินการ'}
@@ -99,9 +105,12 @@ export default function ConsistentHistoryPage() {
               </span>
             </div>
             <p style={{ margin: '0 0 5px 0', fontWeight: 'bold' }}>{policy.quotation?.customerName || 'ไม่ระบุ'}</p>
-            <p style={{ margin: 0, fontSize: '0.85rem', color: '#666' }}>{policy.plan?.planName}</p>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#666' }}>
+              <span>{policy.plan?.planName}</span>
+              <span>ทุน: ฿{Number(policy.quotation?.sumInsured || 0).toLocaleString()}</span>
+            </div>
             <div style={{ marginTop: '15px', paddingTop: '10px', borderTop: '1px solid #f5f5f5', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontWeight: '800', color: 'var(--zoho-accent)' }}>฿{(policy.premiumAmount || 0).toLocaleString()}</span>
+              <span style={{ fontWeight: '800', color: '#006aff' }}>เบี้ย: ฿{Number(policy.premiumAmount || 0).toLocaleString()}</span>
               <Link href={`/user/contracts/${policy.id}`} style={{ color: 'var(--zoho-primary)', fontWeight: 'bold', textDecoration: 'none', fontSize: '0.85rem' }}>รายละเอียด →</Link>
             </div>
           </div>
