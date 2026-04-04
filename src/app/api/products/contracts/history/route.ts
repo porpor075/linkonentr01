@@ -1,22 +1,34 @@
 import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
-import { PolicyHub } from '@/hubs/policyHub';
+import { prisma } from '@/lib/prisma';
 
 export async function GET() {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+  if (!prisma) return NextResponse.json([]);
+
   try {
-    const policies = PolicyHub.getPolicies();
+    const where = session.role.includes('admin') ? {} : { userId: session.id };
     
-    // กรองเฉพาะงานของ User นั้นๆ (ยกเว้นแอดมินที่ดูได้หมด)
-    if (session.role.includes('admin')) {
-      return NextResponse.json(policies);
-    }
+    const policies = await prisma.policy.findMany({
+      where,
+      include: {
+        quotation: true,
+        plan: {
+          include: {
+            insurer: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
     
-    // กรองตาม userId ที่เราบันทึกไว้ใน RecordSale
-    return NextResponse.json(policies.filter((p: any) => p.userId === session.id));
+    return NextResponse.json(policies);
   } catch (e) {
+    console.error('Failed to fetch policy history:', e);
     return NextResponse.json([]);
   }
 }

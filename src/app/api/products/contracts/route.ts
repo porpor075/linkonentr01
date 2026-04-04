@@ -62,8 +62,8 @@ export async function POST(request: Request) {
       }
     }
 
-    // บันทึกผ่าน QuotationEngine (ซึ่งจะคำนวณคอมมิชชันให้อัตโนมัติ)
-    const savedPolicy = QuotationEngine.recordSale(newPolicyData);
+    // บันทึกผ่าน QuotationEngine (ซึ่งจะคำนวณคอมมิชชันให้อัตโนมัติและลงฐานข้อมูล Neon)
+    const savedPolicy = await QuotationEngine.recordSale(newPolicyData);
 
     return NextResponse.json({ success: true, policy: savedPolicy });
 
