@@ -9,7 +9,8 @@
     "lint": "eslint",
     "postinstall": "npx prisma generate",
     "seed:allianz": "tsx seed-allianz.js",
-    "seed:insurers": "tsx seed-insurers.js"
+    "seed:insurers": "tsx seed-insurers.js",
+    "seed:products": "tsx seed-products.js"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.6.0",
