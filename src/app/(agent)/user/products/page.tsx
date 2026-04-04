@@ -106,8 +106,15 @@ export default function ConsistentProductSearch() {
       console.log('Plans Data:', data.plans);
       
       const formattedPlans = (data.plans || []).map((p: any) => {
-        const odCoverage = p.coverages?.find((c: any) => c.code === 'OD' || c.title.includes('ทุน'));
-        return { ...p, confirmedSumInsured: odCoverage ? odCoverage.value : 'N/A' };
+        // หาค่าทุนประกัน: ลองหาจาก coverages (API) หรือใช้ confirmedSumInsured (Manual)
+        let sumInsuredVal = p.confirmedSumInsured || 'N/A';
+        const odCoverage = p.coverages?.find((c: any) => c.code === 'OD' || c.title?.includes('ทุน'));
+        if (odCoverage) sumInsuredVal = odCoverage.value;
+
+        return { 
+          ...p, 
+          confirmedSumInsured: sumInsuredVal 
+        };
       });
       setPlans(formattedPlans);
       if (formattedPlans.length === 0) setDebugMsg('ไม่พบแผนประกันที่ตรงตามเงื่อนไข');
