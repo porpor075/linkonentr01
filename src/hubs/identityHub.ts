@@ -15,13 +15,15 @@ export class IdentityHub {
       update: {
         fullName: data.fullName,
         role: Array.isArray(data.role) ? data.role[0] : data.role,
+        tier: data.tier || 'Standard',
         isActive: data.isActive !== undefined ? data.isActive : true
       },
       create: {
         username: data.username,
         fullName: data.fullName,
         password: data.password || 'password123',
-        role: Array.isArray(data.role) ? data.role[0] : data.role
+        role: Array.isArray(data.role) ? data.role[0] : data.role,
+        tier: data.tier || 'Standard'
       }
     });
   }

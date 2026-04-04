@@ -16,6 +16,7 @@ model User {
   password      String
   fullName      String
   role          String    @default("agent")
+  tier          String    @default("Standard") // เพิ่มฟิลด์สำหรับแบ่งกลุ่ม Agent เช่น Bronze, Silver, Gold
   isActive      Boolean   @default(true)
   deletedAt     DateTime? 
   quotations    Quotation[]

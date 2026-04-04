@@ -8,7 +8,7 @@ export class QuotationEngine {
       return policyData;
     }
 
-    const rate = AnalyticsHub.getRate(policyData.planId, policyData.userId);
+    const rate = await AnalyticsHub.getRate(policyData.planId, policyData.userId);
     const commAmount = (policyData.premiumAmount * rate) / 100;
     
     try {

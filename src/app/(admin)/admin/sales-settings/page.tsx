@@ -12,8 +12,12 @@ export default function AdvancedSalesSettings() {
   const [selectedInsurerId, setSelectedInsurerId] = useState<number | null>(null);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
 
-  const [overrideUserId, setOverrideUserId] = useState('default');
+  const [overrideUserId, setOverrideUserId] = useState('');
+  const [selectedTier, setSelectedTier] = useState('');
+  const [targetType, setTargetType] = useState<'default' | 'tier' | 'individual'>('default');
   const [rateInput, setRateInput] = useState('');
+
+  const tiers = ['Standard', 'Bronze', 'Silver', 'Gold', 'Platinum'];
 
   useEffect(() => {
     const fetchWithCheck = (url: string) => fetch(url).then(res => {
@@ -41,21 +45,30 @@ export default function AdvancedSalesSettings() {
   const handleSave = async () => {
     if (!selectedProductId || !rateInput) return alert('กรุณาระบุข้อมูลให้ครบ');
     
+    let payload: any = { 
+      productId: selectedProductId, 
+      commissionRate: rateInput 
+    };
+
+    if (targetType === 'default') payload.userId = 'default';
+    else if (targetType === 'tier') {
+      if (!selectedTier) return alert('กรุณาเลือก Tier');
+      payload.tierId = selectedTier;
+    } else {
+      if (!overrideUserId) return alert('กรุณาเลือก Agent');
+      payload.userId = overrideUserId;
+    }
+
     try {
       const res = await fetch('/api/admin/commission', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          productId: selectedProductId, 
-          userId: overrideUserId, 
-          commissionRate: rateInput 
-        })
+        body: JSON.stringify(payload)
       });
 
       if (res.ok) {
         alert('บันทึกสำเร็จ');
         setRateInput('');
-        setOverrideUserId('default');
         // Refresh
         const freshRes = await fetch('/api/admin/commission');
         if (freshRes.ok) {
@@ -96,8 +109,8 @@ export default function AdvancedSalesSettings() {
   return (
     <main>
       <header style={{ marginBottom: '2rem' }}>
-        <h1 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>ตั้งค่าคอมมิชชันรายโปรดักต์และรายบุคคล</h1>
-        <p style={{ color: '#666' }}>จัดการส่วนแบ่งรายได้ให้ Agent อย่างละเอียด</p>
+        <h1 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>ตั้งค่าคอมมิชชันรายกลุ่มและรายบุคคล</h1>
+        <p style={{ color: '#666' }}>จัดการส่วนแบ่งรายได้ให้ Agent ตาม Tier หรือรายบุคคล</p>
       </header>
 
       <div className="grid grid-2">
@@ -137,18 +150,40 @@ export default function AdvancedSalesSettings() {
         {selectedProductId && (
           <div className="card">
             <h3 style={{ marginBottom: '1.5rem' }}>2. กำหนดค่าคอมมิชชัน (%)</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
               <div>
-                <label className="text-muted">สำหรับใคร?</label>
-                <select 
-                  value={overrideUserId} 
-                  onChange={(e) => setOverrideUserId(e.target.value)}
-                  style={{ width: '100%', padding: '10px', marginTop: '5px' }}
-                >
-                  <option value="default">ค่ามาตรฐาน (Default - ทุกคน)</option>
-                  {users.map(u => <option key={u.id} value={u.id}>เฉพาะ: {u.fullName} (@{u.username})</option>)}
-                </select>
+                <label className="text-muted">ประเภทเป้าหมาย</label>
+                <div style={{ display: 'flex', gap: '10px', marginTop: '5px' }}>
+                  <button onClick={() => setTargetType('default')} style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid #ddd', background: targetType === 'default' ? '#006aff' : 'white', color: targetType === 'default' ? 'white' : '#333' }}>ทุกคน</button>
+                  <button onClick={() => setTargetType('tier')} style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid #ddd', background: targetType === 'tier' ? '#006aff' : 'white', color: targetType === 'tier' ? 'white' : '#333' }}>รายกลุ่ม (Tier)</button>
+                  <button onClick={() => setTargetType('individual')} style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid #ddd', background: targetType === 'individual' ? '#006aff' : 'white', color: targetType === 'individual' ? 'white' : '#333' }}>รายคน</button>
+                </div>
               </div>
+
+              {targetType === 'tier' && (
+                <div>
+                  <label className="text-muted">เลือกกลุ่ม (Tier)</label>
+                  <select value={selectedTier} onChange={(e) => setSelectedTier(e.target.value)} style={{ width: '100%', padding: '10px', marginTop: '5px' }}>
+                    <option value="">-- เลือก Tier --</option>
+                    {tiers.map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+              )}
+
+              {targetType === 'individual' && (
+                <div>
+                  <label className="text-muted">เลือก Agent</label>
+                  <select 
+                    value={overrideUserId} 
+                    onChange={(e) => setOverrideUserId(e.target.value)}
+                    style={{ width: '100%', padding: '10px', marginTop: '5px' }}
+                  >
+                    <option value="">-- เลือกรายคน --</option>
+                    {users.map(u => <option key={u.id} value={u.id}>{u.fullName} (@{u.username}) [{u.tier || 'Standard'}]</option>)}
+                  </select>
+                </div>
+              )}
+
               <div>
                 <label className="text-muted">อัตราคอมมิชชัน (เปอร์เซ็นต์)</label>
                 <div style={{ display: 'flex', gap: '10px', marginTop: '5px' }}>
@@ -186,13 +221,19 @@ export default function AdvancedSalesSettings() {
               {productComms.length === 0 ? (
                 <tr><td colSpan={4} style={{ padding: '2rem', textAlign: 'center', color: '#999' }}>ยังไม่ได้กำหนดค่าคอมมิชชัน</td></tr>
               ) : (
-                productComms.sort((a,b) => a.userId === 'default' ? -1 : 1).map(c => {
+                productComms.sort((a,b) => {
+                  if (a.userId === 'default') return -1;
+                  if (a.tierId) return 0;
+                  return 1;
+                }).map(c => {
                   const user = users.find(u => u.id === c.userId);
                   return (
                     <tr key={c.id} style={{ borderBottom: '1px solid #f5f5f5' }}>
                       <td style={{ padding: '1rem' }}>
                         {c.userId === 'default' ? (
                           <span style={{ fontWeight: 'bold', color: 'var(--zoho-accent)' }}>🌟 ค่ามาตรฐาน (ทุกคน)</span>
+                        ) : c.tierId ? (
+                          <span style={{ fontWeight: 'bold', color: '#f39c12' }}>🏷️ กลุ่ม Tier: {c.tierId}</span>
                         ) : (
                           <span>👤 {user?.fullName || 'ไม่พบข้อมูล User'}</span>
                         )}

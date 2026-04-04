@@ -5,11 +5,23 @@ export class AnalyticsHub {
   static getAllCommissions() { return DataStore.read<any>('commissions.json'); }
   static saveCommissions(data: any[]) { DataStore.write('commissions.json', data); }
   
-  static getRate(productId: string, userId: string): number {
+  static async getRate(productId: string, userId: string): Promise<number> {
     const comms = this.getAllCommissions();
-    const override = comms.find((c: any) => c.productId === productId && c.userId === userId);
-    if (override) return override.commissionRate;
     
+    // 1. เช็คเรทเฉพาะบุคคล (Highest Priority)
+    const individualOverride = comms.find((c: any) => c.productId === productId && c.userId === userId);
+    if (individualOverride) return individualOverride.commissionRate;
+    
+    // 2. เช็คเรทตามกลุ่ม (Tier)
+    if (prisma) {
+      const user = await prisma.user.findUnique({ where: { id: userId }, select: { tier: true } });
+      if (user?.tier) {
+        const tierOverride = comms.find((c: any) => c.productId === productId && c.tierId === user.tier);
+        if (tierOverride) return tierOverride.commissionRate;
+      }
+    }
+    
+    // 3. ค่ามาตรฐาน (Default)
     const defaultRate = comms.find((c: any) => c.productId === productId && c.userId === 'default');
     return defaultRate ? defaultRate.commissionRate : 0;
   }
