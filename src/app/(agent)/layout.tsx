@@ -12,6 +12,7 @@ export default function AgentLayout({
   const pathname = usePathname();
   const router = useRouter();
   const [isMobile, setIsMobile] = useState(true);
+  const [session, setSession] = useState<any>(null);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -19,6 +20,10 @@ export default function AgentLayout({
     };
     checkMobile();
     window.addEventListener('resize', checkMobile);
+    
+    // ดึงข้อมูล Session เพื่อเช็คสิทธิ์
+    fetch('/api/auth/session').then(res => res.json()).then(setSession);
+
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
@@ -34,6 +39,8 @@ export default function AgentLayout({
     { label: 'งานของฉัน', href: '/user/tasks', icon: '📋' },
     { label: 'การชำระเงิน', href: '/user/quotation', icon: '🔗' },
   ];
+
+  const hasBothRoles = session?.role?.includes('admin') && session?.role?.includes('agent');
 
   // Mobile View
   if (isMobile) {
@@ -60,6 +67,15 @@ export default function AgentLayout({
               {item.label}
             </Link>
           ))}
+          {hasBothRoles && (
+            <Link 
+              href="/admin" 
+              style={{ textAlign: 'center', fontSize: '0.7rem', color: '#f39c12', textDecoration: 'none' }}
+            >
+              <div style={{ fontSize: '1.5rem', marginBottom: '2px' }}>⚙️</div>
+              แอดมิน
+            </Link>
+          )}
           <button 
             onClick={handleLogout}
             style={{ border: 'none', background: 'none', textAlign: 'center', fontSize: '0.7rem', color: 'var(--zoho-text-muted)', cursor: 'pointer' }}
@@ -108,20 +124,26 @@ export default function AgentLayout({
           ))}
           
           <div style={{ marginTop: 'auto' }}>
-            <Link 
-              href="/admin" 
-              style={{
-                padding: '0.75rem 1rem',
-                color: 'rgba(255,255,255,0.5)',
-                fontSize: '0.85rem',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.75rem',
-                textDecoration: 'none'
-              }}
-            >
-              <span>⚙️</span> ระบบหลังบ้าน (แอดมิน)
-            </Link>
+            {hasBothRoles && (
+              <Link 
+                href="/admin" 
+                style={{
+                  padding: '0.75rem 1rem',
+                  color: '#f39c12',
+                  fontSize: '0.85rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.75rem',
+                  textDecoration: 'none',
+                  fontWeight: 'bold',
+                  background: 'rgba(243, 156, 18, 0.1)',
+                  borderRadius: '4px',
+                  marginBottom: '0.5rem'
+                }}
+              >
+                <span>⚙️</span> สลับไปหน้าแอดมิน
+              </Link>
+            )}
             <button 
               onClick={handleLogout}
               style={{
@@ -134,8 +156,7 @@ export default function AgentLayout({
                 gap: '0.75rem',
                 background: 'transparent',
                 border: 'none',
-                cursor: 'pointer',
-                marginTop: '0.5rem'
+                cursor: 'pointer'
               }}
             >
               <span>🚪</span> ออกจากระบบ
@@ -158,11 +179,11 @@ export default function AgentLayout({
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
               <div style={{ textAlign: 'right' }}>
-                <p style={{ fontSize: '0.85rem', fontWeight: 'bold', margin: 0 }}>NTR Agent</p>
+                <p style={{ fontSize: '0.85rem', fontWeight: 'bold', margin: 0 }}>{session?.name || 'NTR Agent'}</p>
                 <p style={{ fontSize: '0.7rem', color: 'var(--zoho-text-muted)', margin: 0 }}>Verified Partner</p>
               </div>
               <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--zoho-accent)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
-                N
+                {session?.name?.charAt(0) || 'N'}
               </div>
             </div>
           </div>

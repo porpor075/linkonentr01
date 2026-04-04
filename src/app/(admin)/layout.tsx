@@ -12,6 +12,7 @@ export default function AdminLayout({
   const pathname = usePathname();
   const router = useRouter();
   const [isMobile, setIsMobile] = useState<boolean | null>(null);
+  const [session, setSession] = useState<any>(null);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -19,6 +20,10 @@ export default function AdminLayout({
     };
     checkMobile();
     window.addEventListener('resize', checkMobile);
+
+    // ดึงข้อมูล Session เพื่อเช็คสิทธิ์
+    fetch('/api/auth/session').then(res => res.json()).then(setSession);
+
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
@@ -36,6 +41,8 @@ export default function AdminLayout({
     { label: 'สินค้า API (Internal)', href: '/admin/insurance-products', icon: '⚡' },
   ];
 
+  const hasBothRoles = session?.role?.includes('admin') && session?.role?.includes('agent');
+
   if (isMobile === null) return <div style={{ background: '#001F3F', height: '100vh' }} />;
 
   // Mobile View for Admin
@@ -47,7 +54,7 @@ export default function AdminLayout({
         </div>
 
         <nav className="mobile-nav" style={{ background: 'rgba(0, 31, 63, 0.95)', border: 'none' }}>
-          {adminNav.slice(0, 4).map((item) => (
+          {adminNav.slice(0, 3).map((item) => (
             <Link 
               key={item.label} 
               href={item.href} 
@@ -60,9 +67,18 @@ export default function AdminLayout({
               }}
             >
               <div style={{ fontSize: '1.4rem', marginBottom: '2px' }}>{item.icon}</div>
-              {item.label}
+              {item.label.split(' ')[0]}
             </Link>
           ))}
+          {hasBothRoles && (
+            <Link 
+              href="/user" 
+              style={{ textAlign: 'center', fontSize: '0.7rem', color: 'var(--zoho-warning)', textDecoration: 'none' }}
+            >
+              <div style={{ fontSize: '1.4rem', marginBottom: '2px' }}>🏠</div>
+              ตัวแทน
+            </Link>
+          )}
           <button 
             onClick={handleLogout}
             style={{ border: 'none', background: 'none', textAlign: 'center', fontSize: '0.7rem', color: 'rgba(255,255,255,0.6)', cursor: 'pointer' }}
@@ -111,9 +127,11 @@ export default function AdminLayout({
           ))}
           
           <div style={{ marginTop: 'auto', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-             <Link href="/" style={{ padding: '0.75rem 1rem', color: 'var(--zoho-warning)', fontSize: '0.85rem', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span>←</span> กลับหน้าตัวแทน
-             </Link>
+             {hasBothRoles && (
+               <Link href="/user" style={{ padding: '0.75rem 1rem', color: 'var(--zoho-warning)', fontSize: '0.85rem', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', marginBottom: '0.5rem' }}>
+                  <span>🏠</span> สลับไปหน้าตัวแทน
+               </Link>
+             )}
              <button 
               onClick={handleLogout}
               style={{
@@ -127,7 +145,6 @@ export default function AdminLayout({
                 background: 'transparent',
                 border: 'none',
                 cursor: 'pointer',
-                marginTop: '0.5rem',
                 fontWeight: 'bold'
               }}
             >
@@ -150,7 +167,7 @@ export default function AdminLayout({
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
              <span className="badge badge-success" style={{ padding: '4px 12px' }}>● System Online</span>
              <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--zoho-warning)', color: '#001F3F', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
-                N
+                {session?.name?.charAt(0) || 'A'}
               </div>
           </div>
         </header>
