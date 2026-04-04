@@ -43,8 +43,12 @@ export async function POST(request: Request) {
               };
 
               const quote = await getAllianzQuickQuote(accessToken, quoteParams);
-              
-              if (quote && quote.productPackages && quote.productPackages[0]) {
+
+              // ตรวจสอบว่า API คืนราคามาสำเร็จหรือไม่
+              const hasPackages = quote && quote.productPackages && quote.productPackages[0];
+              const isTimeout = quote?.fault?.faultstring?.includes('Timeout') || quote?.errors?.some((err: any) => err.code === 'TIMEOUT');
+
+              if (hasPackages) {
                 const pkg = quote.productPackages[0];
                 const cov = pkg.coverages[0];
                 const price = pkg.premium?.grossPremium || cov.premium?.grossPremium || null;
@@ -70,6 +74,34 @@ export async function POST(request: Request) {
                   };
                 }
               }
+
+              // --- FALLBACK LOGIC: ถ้า API ล่ม หรือหาแผนไม่เจอ ให้ดึงราคาจาก DB แทน ---
+              if (isTimeout || !hasPackages) {
+                console.log(`[RATES_API] Fallback for ${product.planCode} (API Timeout or No Data)`);
+                // ใช้ราคาจาก DB (ถ้าเป็น 0 ให้ม็อคเป็นราคามาตรฐาน)
+                const fallbackPrice = product.totalPremium > 0 ? product.totalPremium : (product.planType === 'VMI1' ? 15900 : 7900);
+
+                return {
+                  id: `AL-FB-${product.planCode}-${Date.now()}`,
+                  name: insurer.nameTh,
+                  logoUrl: insurer.logoUrl,
+                  planType: product.planType,
+                  planCode: product.planCode,
+                  planName: product.planName + ' (API Offline)',
+                  price: fallbackPrice,
+                  confirmedSumInsured: product.planType === 'VMI1' ? (body.sumInsured?.toLocaleString() || '500,000') : '100,000',
+                  type: insuranceCategory,
+                  isApi: true,
+                  isFallback: true, // บอกให้รู้ว่าเป็นราคาจำลอง
+                  isAvailable: true,
+                  coverages: [
+                    { title: 'ความรับผิดชอบบุคคลภายนอก', value: '500,000' },
+                    { title: 'ความเสียหายต่อตัวรถยนต์', value: product.planType === 'VMI1' ? 'ตามทุนประกัน' : 'คุ้มครอง' },
+                    { title: 'สถานะ API', value: isTimeout ? 'Gateway Timeout' : 'No Data' }
+                  ]
+                };
+              }
+
             } catch (e) { console.error(`Error fetching Allianz ${product.planCode}`, e); }
             return null;
           });
