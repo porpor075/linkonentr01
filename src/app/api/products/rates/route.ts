@@ -11,10 +11,6 @@ export async function POST(request: Request) {
   const { searchMode, insuranceCategory, sumInsured } = body;
 
   try {
-    const accessToken = await getAllianzAccessToken();
-    if (!accessToken) {
-      return NextResponse.json({ error: 'Failed to obtain Allianz access token' }, { status: 500 });
-    }
     const insurers = await BusinessHub.getInsurers();
 
     const insurerPromises = insurers.map(async (insurer) => {
@@ -27,74 +23,72 @@ export async function POST(request: Request) {
       });
       
       if (insurer.integrationType === 'API' && insurer.nameEn.toLowerCase().includes('allianz')) {
-        // --- แผนที่ต้องการเช็ค ---
-        const targetPlans = (insuranceCategory === 'CMI' || searchMode === 'list') 
-          ? managedProducts 
-          : managedProducts.filter((p: any) => p.planCode === body.planType);
+        try {
+          const accessToken = await getAllianzAccessToken();
+          if (!accessToken) throw new Error('No Access Token');
 
-        const quotePromises = targetPlans.map(async (product: any) => {
-          try {
-            const isCMI = insuranceCategory === 'CMI';
-            const quoteParams = { 
-              ...body, 
-              productCode: isCMI ? 'CMI' : 'VMI',
-              planType: product.planCode,
-              sumInsured: isCMI ? 0 : (product.planCode === 'VMI1' ? (body.listSumInsured || body.sumInsured || 500000) : 100000),
-              garageType: isCMI ? 'UNSPECIFIED' : body.garageType
-            };
+          // --- แผนที่ต้องการเช็ค ---
+          const targetPlans = (insuranceCategory === 'CMI' || searchMode === 'list') 
+            ? managedProducts 
+            : managedProducts.filter((p: any) => p.planCode === body.planType);
 
-            const quote = await getAllianzQuickQuote(accessToken, quoteParams);
-            
-            if (quote && quote.productPackages && quote.productPackages[0]) {
-              const pkg = quote.productPackages[0];
-              const cov = pkg.coverages[0];
-              const price = pkg.premium?.grossPremium || cov.premium?.grossPremium || null;
+          const quotePromises = targetPlans.map(async (product: any) => {
+            try {
+              const isCMI = insuranceCategory === 'CMI';
+              const quoteParams = { 
+                ...body, 
+                productCode: isCMI ? 'CMI' : 'VMI',
+                planType: product.planCode,
+                sumInsured: isCMI ? 0 : (product.planCode === 'VMI1' ? (body.listSumInsured || body.sumInsured || 500000) : 100000),
+                garageType: isCMI ? 'UNSPECIFIED' : body.garageType
+              };
 
-              if (price) {
-                // รายละเอียดความคุ้มครองพื้นฐานสำหรับ CMI (กรณี API ไม่คืนมา)
-                const cmiDefaultCoverages = [
-                  { code: 'DEATH', title: 'เสียชีวิต/ทุพพลภาพถาวร', value: '500,000' },
-                  { code: 'MEDICAL', title: 'ค่ารักษาพยาบาล (ตามจริง)', value: '80,000' },
-                  { code: 'COMPENSATION', title: 'เงินชดเชยรายวัน (ผู้ป่วยใน)', value: '200' },
-                  { code: 'TOTAL_LIMIT', title: 'วงเงินความคุ้มครองสูงสุด', value: '504,000' }
-                ];
+              const quote = await getAllianzQuickQuote(accessToken, quoteParams);
+              
+              if (quote && quote.productPackages && quote.productPackages[0]) {
+                const pkg = quote.productPackages[0];
+                const cov = pkg.coverages[0];
+                const price = pkg.premium?.grossPremium || cov.premium?.grossPremium || null;
 
-                return {
-                  id: `AL-${cov.code}-${Date.now()}-${Math.random()}`,
-                  name: insurer.nameTh,
-                  logoUrl: insurer.logoUrl,
-                  planType: cov.code,
-                  planCode: cov.code,
-                  planName: product.planName,
-                  price: price,
-                  confirmedSumInsured: cov.sumInsured?.toLocaleString() || '0',
-                  type: insuranceCategory,
-                  isApi: true,
-                  isAvailable: true,
-                  coverages: (cov.coverageItems ? (Array.isArray(cov.coverageItems[0]) ? cov.coverageItems[0] : cov.coverageItems) : (insuranceCategory === 'CMI' ? cmiDefaultCoverages : [])).map((i: any) => ({ 
-                    code: i.code, 
-                    title: i.name || i.title, 
-                    value: i.sumInsured !== undefined && i.sumInsured !== null ? i.sumInsured.toLocaleString() : (i.value || 'N/A') 
-                  }))
-                };
+                if (price) {
+                  // รายละเอียดความคุ้มครองพื้นฐานสำหรับ CMI (กรณี API ไม่คืนมา)
+                  const cmiDefaultCoverages = [
+                    { code: 'DEATH', title: 'เสียชีวิต/ทุพพลภาพถาวร', value: '500,000' },
+                    { code: 'MEDICAL', title: 'ค่ารักษาพยาบาล (ตามจริง)', value: '80,000' },
+                    { code: 'COMPENSATION', title: 'เงินชดเชยรายวัน (ผู้ป่วยใน)', value: '200' },
+                    { code: 'TOTAL_LIMIT', title: 'วงเงินความคุ้มครองสูงสุด', value: '504,000' }
+                  ];
+
+                  return {
+                    id: `AL-${cov.code}-${Date.now()}-${Math.random()}`,
+                    name: insurer.nameTh,
+                    logoUrl: insurer.logoUrl,
+                    planType: cov.code,
+                    planCode: cov.code,
+                    planName: product.planName,
+                    price: price,
+                    confirmedSumInsured: cov.sumInsured?.toLocaleString() || '0',
+                    type: insuranceCategory,
+                    isApi: true,
+                    isAvailable: true,
+                    coverages: (cov.coverageItems ? (Array.isArray(cov.coverageItems[0]) ? cov.coverageItems[0] : cov.coverageItems) : (insuranceCategory === 'CMI' ? cmiDefaultCoverages : [])).map((i: any) => ({ 
+                      code: i.code, 
+                      title: i.name || i.title, 
+                      value: i.sumInsured !== undefined && i.sumInsured !== null ? i.sumInsured.toLocaleString() : (i.value || 'N/A') 
+                    }))
+                  };
+                }
               }
-            }
-          } catch (e) { console.error(`Error fetching ${product.planCode}`, e); }
-          
-          return {
-            id: `AL-${product.planCode}-empty`,
-            name: insurer.nameTh,
-            logoUrl: insurer.logoUrl,
-            planType: product.planCode,
-            planCode: product.planCode,
-            planName: product.planName,
-            price: null,
-            isAvailable: false,
-            type: insuranceCategory
-          };
-        });
+            } catch (e) { console.error(`Error fetching ${product.planCode}`, e); }
+            
+            return null;
+          });
 
-        return await Promise.all(quotePromises);
+          return await Promise.all(quotePromises);
+        } catch (authErr) {
+          console.error('Allianz Auth Failed, skipping Allianz plans', authErr);
+          return [];
+        }
 
       } else if (insurer.integrationType === 'MANUAL') {
         const manualPlans: any[] = [];
