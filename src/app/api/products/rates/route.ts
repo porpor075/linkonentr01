@@ -99,7 +99,10 @@ export async function POST(request: Request) {
       } else if (insurer.integrationType === 'MANUAL') {
         const manualPlans: any[] = [];
         managedProducts.forEach((p: any) => {
-          if (insuranceCategory === 'CMI' || searchMode === 'list' || p.planType === body.planType) {
+          const isMatchCategory = (insuranceCategory === 'CMI' && p.planType === 'CMI') || (insuranceCategory === 'VMI' && p.planType !== 'CMI');
+          const isMatchSearch = searchMode === 'list' || p.planCode === body.planType || p.planType === body.planType;
+
+          if (isMatchCategory && isMatchSearch) {
             manualPlans.push({
               id: `MN-${p.id}`,
               name: insurer.nameTh,
@@ -108,7 +111,7 @@ export async function POST(request: Request) {
               planCode: p.planCode,
               planName: p.planName,
               price: p.totalPremium,
-              confirmedSumInsured: 'ตามเงื่อนไขแอดมิน',
+              confirmedSumInsured: p.planType === 'VMI1' ? (body.sumInsured?.toLocaleString() || 'ตามทุนประกัน') : 'ตามเงื่อนไขแอดมิน',
               type: insuranceCategory,
               coverages: [
                 { title: 'ความรับผิดชอบบุคคลภายนอก', value: '500,000' },
