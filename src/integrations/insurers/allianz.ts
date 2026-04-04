@@ -6,12 +6,20 @@ const apiLog = (msg: string) => {
   try { fs.appendFileSync(logPath, `[${new Date().toISOString()}] [ALLIANZ_LIB] ${msg}\n`); } catch (e) {}
 };
 
+let cachedToken: string | null = null;
+let tokenExpiry: number = 0;
+
 export async function getAllianzAccessToken() {
+  // เช็คว่ามี Token ใน Cache และยังไม่หมดอายุ (ลบออก 1 นาทีเพื่อความปลอดภัย)
+  if (cachedToken && Date.now() < tokenExpiry) {
+    return cachedToken;
+  }
+
   const basicAuth = process.env.ALLIANZ_BASIC_AUTH;
   const url = 'https://asia-uat-th-pc.apis.allianz.com/api/oauth2/token?grant_type=client_credentials&oe_id=th-pc';
   
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout for token
+  const timeoutId = setTimeout(() => controller.abort(), 10000);
 
   try {
     const response = await fetch(url, {
@@ -22,7 +30,12 @@ export async function getAllianzAccessToken() {
     clearTimeout(timeoutId);
     if (!response.ok) throw new Error('Auth Failed');
     const data = await response.json();
-    return data.access_token;
+    
+    // เก็บ Token ลง Cache (ปกติหมดอายุใน 3600 วินาที)
+    cachedToken = data.access_token;
+    tokenExpiry = Date.now() + ((data.expires_in || 3600) * 1000) - 60000;
+    
+    return cachedToken;
   } catch (e: any) {
     clearTimeout(timeoutId);
     apiLog(`Auth Error: ${e.message}`);

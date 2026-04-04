@@ -13,9 +13,8 @@ export async function POST(request: Request) {
   try {
     const accessToken = await getAllianzAccessToken();
     const insurers = await BusinessHub.getInsurers();
-    let allPlans: any[] = [];
 
-    for (const insurer of insurers) {
+    const insurerPromises = insurers.map(async (insurer) => {
       // ดึงแผนเฉพาะที่แอดมินเปิดใช้งานไว้ และกรองตามประเภท VMI/CMI
       const allProducts = await BusinessHub.getProducts(insurer.id);
       const managedProducts = allProducts.filter((p: any) => {
@@ -42,8 +41,7 @@ export async function POST(request: Request) {
             };
 
             const quote = await getAllianzQuickQuote(accessToken, quoteParams);
-            console.log(`[DEBUG_RATES] Plan: ${product.planCode}, Quote Structure:`, JSON.stringify(quote, null, 2));
-
+            
             if (quote && quote.productPackages && quote.productPackages[0]) {
               const pkg = quote.productPackages[0];
               const cov = pkg.coverages[0];
@@ -58,7 +56,7 @@ export async function POST(request: Request) {
                   { code: 'TOTAL_LIMIT', title: 'วงเงินความคุ้มครองสูงสุด', value: '504,000' }
                 ];
 
-                const mappedPlan = {
+                return {
                   id: `AL-${cov.code}-${Date.now()}-${Math.random()}`,
                   name: insurer.nameTh,
                   logoUrl: insurer.logoUrl,
@@ -76,8 +74,6 @@ export async function POST(request: Request) {
                     value: i.sumInsured !== undefined && i.sumInsured !== null ? i.sumInsured.toLocaleString() : (i.value || 'N/A') 
                   }))
                 };
-                console.log(`[DEBUG_RATES] Mapped Plan:`, JSON.stringify(mappedPlan, null, 2));
-                return mappedPlan;
               }
             }
           } catch (e) { console.error(`Error fetching ${product.planCode}`, e); }
@@ -95,21 +91,13 @@ export async function POST(request: Request) {
           };
         });
 
-        const results = await Promise.all(quotePromises);
-        allPlans = [...allPlans, ...results];
+        return await Promise.all(quotePromises);
 
       } else if (insurer.integrationType === 'MANUAL') {
+        const manualPlans: any[] = [];
         managedProducts.forEach((p: any) => {
           if (insuranceCategory === 'CMI' || searchMode === 'list' || p.planType === body.planType) {
-            // ม็อคความคุ้มครองพื้นฐานสำหรับแผน Manual เพื่อให้ UI ไม่ว่าง
-            const manualCoverages = [
-              { title: 'ความรับผิดชอบบุคคลภายนอก', value: '500,000' },
-              { title: 'ความเสียหายต่อตัวรถยนต์', value: p.planType === 'VMI1' ? 'ตามทุนประกัน' : 'N/A' },
-              { title: 'อุบัติเหตุส่วนบุคคล (RY01)', value: '100,000' },
-              { title: 'การประกันตัวผู้ขับขี่ (RY03)', value: '200,000' }
-            ];
-
-            allPlans.push({
+            manualPlans.push({
               id: `MN-${p.id}`,
               name: insurer.nameTh,
               logoUrl: insurer.logoUrl,
@@ -119,14 +107,24 @@ export async function POST(request: Request) {
               price: p.totalPremium,
               confirmedSumInsured: 'ตามเงื่อนไขแอดมิน',
               type: insuranceCategory,
-              coverages: manualCoverages,
+              coverages: [
+                { title: 'ความรับผิดชอบบุคคลภายนอก', value: '500,000' },
+                { title: 'ความเสียหายต่อตัวรถยนต์', value: p.planType === 'VMI1' ? 'ตามทุนประกัน' : 'N/A' },
+                { title: 'อุบัติเหตุส่วนบุคคล (RY01)', value: '100,000' },
+                { title: 'การประกันตัวผู้ขับขี่ (RY03)', value: '200,000' }
+              ],
               isManual: true,
               isAvailable: true
             });
           }
         });
+        return manualPlans;
       }
-    }
+      return [];
+    });
+
+    const nestedResults = await Promise.all(insurerPromises);
+    const allPlans = nestedResults.flat();
 
     const sortedPlans = allPlans.sort((a, b) => {
       const order: any = { 'VMI1': 1, 'VMI2+': 2, 'VMI3+': 3, 'VMI2': 4, 'VMI3': 5, 'CMI': 6 };
