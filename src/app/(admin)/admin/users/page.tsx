@@ -14,7 +14,8 @@ export default function UserManagement() {
       const res = await fetch('/api/admin/users');
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       const data = await res.json();
-      setUsers(data.users || []);
+      // แก้ไขตรงนี้: data คือ array ของ users โดยตรง ไม่ต้อง .users
+      setUsers(Array.isArray(data) ? data : []);
     } catch (e) {
       console.error('Failed to fetch users:', e);
     } finally {
