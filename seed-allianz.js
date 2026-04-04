@@ -13,19 +13,20 @@ async function main() {
     update: {
       nameTh: 'อลิอันซ์ อยุธยา ประกันภัย',
       nameEn: 'Allianz Ayudhya General Insurance',
-      logoUrl: 'https://www.allianz.co.th/content/dam/onemarketing/azth/allianz-ayudhya/logo/Allianz_Ayudhya_Logo.png',
+      logoUrl: '/allianz-logo.png', // เปลี่ยนเป็นโลโก้ใหม่ที่คุณส่งมา
       integrationType: 'API',
       apiEndpoint: 'https://asia-uat-th-pc.apis.allianz.com/v1'
     },
     create: {
+      id: 1,
       nameTh: 'อลิอันซ์ อยุธยา ประกันภัย',
       nameEn: 'Allianz Ayudhya General Insurance',
-      logoUrl: 'https://www.allianz.co.th/content/dam/onemarketing/azth/allianz-ayudhya/logo/Allianz_Ayudhya_Logo.png',
+      logoUrl: '/allianz-logo.png', // เปลี่ยนเป็นโลโก้ใหม่ที่คุณส่งมา
       integrationType: 'API',
       apiEndpoint: 'https://asia-uat-th-pc.apis.allianz.com/v1'
     }
   });
-  console.log('Successfully added Allianz:', insurer);
+  console.log('Successfully updated Allianz logo to local path:', insurer);
 }
 
 main()
