@@ -100,6 +100,11 @@ export default function ConsistentProductSearch() {
       });
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       const data = await res.json();
+      console.log('--- API RESPONSE DEBUG ---');
+      console.log('Status:', data.status);
+      console.log('Plans Count:', data.plans?.length);
+      console.log('Plans Data:', data.plans);
+      
       const formattedPlans = (data.plans || []).map((p: any) => {
         const odCoverage = p.coverages?.find((c: any) => c.code === 'OD' || c.title.includes('ทุน'));
         return { ...p, confirmedSumInsured: odCoverage ? odCoverage.value : 'N/A' };
