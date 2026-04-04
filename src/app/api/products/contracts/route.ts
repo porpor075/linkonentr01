@@ -43,6 +43,9 @@ export async function POST(request: Request) {
     if (insurer && insurer.integrationType === 'API' && insurer.nameEn?.toLowerCase().includes('allianz')) {
       try {
         const accessToken = await getAllianzAccessToken();
+        if (!accessToken) {
+          throw new Error('Failed to obtain Allianz access token');
+        }
         const apiResponse = await createAllianzContract(accessToken, newPolicyData);
         
         if (apiResponse && apiResponse.contractNumber) {

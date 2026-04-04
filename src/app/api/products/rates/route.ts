@@ -12,6 +12,9 @@ export async function POST(request: Request) {
 
   try {
     const accessToken = await getAllianzAccessToken();
+    if (!accessToken) {
+      return NextResponse.json({ error: 'Failed to obtain Allianz access token' }, { status: 500 });
+    }
     const insurers = await BusinessHub.getInsurers();
 
     const insurerPromises = insurers.map(async (insurer) => {

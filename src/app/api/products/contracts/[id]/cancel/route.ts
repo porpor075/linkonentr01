@@ -18,6 +18,9 @@ export async function POST(
 
   try {
     const accessToken = await getAllianzAccessToken();
+    if (!accessToken) {
+      return NextResponse.json({ error: 'Failed to obtain Allianz access token' }, { status: 500 });
+    }
     const result = await cancelAllianzContract(accessToken, contractId, reason);
 
     if (!result) {
