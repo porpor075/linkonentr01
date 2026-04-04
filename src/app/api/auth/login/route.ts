@@ -19,28 +19,34 @@ export async function POST(request: Request) {
     // 1. Check Database (Only if prisma is initialized)
     if (prisma) {
       try {
+        log(`Querying DB for: ${username}`);
         const user = await (prisma as any).user.findUnique({
           where: { username: username }
         });
 
-        if (user && user.password === password) {
-          log(`DB Success: ${username}`);
-          // แก้ไขตรงนี้: แยกสิทธิ์ด้วยคอมม่า เพื่อให้เป็น Array ของ 'admin' | 'agent'
-          const roles = user.role.split(',') as ('admin' | 'agent')[];
-          session = {
-            id: user.id,
-            username: user.username,
-            name: user.fullName,
-            role: roles
-          };
-        } else if (user) {
-          log(`DB Pass Mismatch: ${username}`);
+        if (user) {
+          log(`User found in DB: ${user.username}, Role: ${user.role}`);
+          if (user.password === password) {
+            log(`DB Password Match: ${username}`);
+            const roles = user.role.split(',') as ('admin' | 'agent')[];
+            session = {
+              id: user.id,
+              username: user.username,
+              name: user.fullName,
+              role: roles
+            };
+          } else {
+            log(`DB Password Mismatch: ${username}`);
+          }
+        } else {
+          log(`User NOT found in DB: ${username}`);
         }
       } catch (dbErr: any) {
         log(`DB Runtime Error: ${dbErr.message}`);
+        console.error('[DB_ERROR]', dbErr);
       }
     } else {
-      log('Prisma not initialized (no DATABASE_URL)');
+      log('Prisma is NULL - Check DATABASE_URL environment variable');
     }
 
     // 2. Fallback Mock
