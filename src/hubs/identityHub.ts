@@ -3,18 +3,28 @@ import { prisma } from '../lib/prisma';
 export class IdentityHub {
   static async getUsers() { 
     if (!prisma) return [];
-    return await prisma.user.findMany({
+    const users = await prisma.user.findMany({
       where: { deletedAt: null }
     });
+    
+    // แปลง role จาก string ("admin,agent") เป็น array (["admin", "agent"])
+    return users.map(user => ({
+      ...user,
+      role: user.role.split(',')
+    }));
   }
   
   static async saveUser(data: any) { 
     if (!prisma) return null;
+    
+    // จัดการข้อมูล Role: ถ้าส่งมาเป็น Array ให้เชื่อมด้วยคอมม่า ถ้าเป็น String ให้ใช้ค่านั้นเลย
+    const rolesString = Array.isArray(data.role) ? data.role.join(',') : data.role;
+
     return await prisma.user.upsert({
       where: { username: data.username },
       update: {
         fullName: data.fullName,
-        role: Array.isArray(data.role) ? data.role[0] : data.role,
+        role: rolesString,
         tier: data.tier || 'Standard',
         isActive: data.isActive !== undefined ? data.isActive : true
       },
@@ -22,7 +32,7 @@ export class IdentityHub {
         username: data.username,
         fullName: data.fullName,
         password: data.password || 'password123',
-        role: Array.isArray(data.role) ? data.role[0] : data.role,
+        role: rolesString,
         tier: data.tier || 'Standard'
       }
     });

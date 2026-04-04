@@ -25,11 +25,13 @@ export async function POST(request: Request) {
 
         if (user && user.password === password) {
           log(`DB Success: ${username}`);
+          // แก้ไขตรงนี้: แยกสิทธิ์ด้วยคอมม่า เพื่อให้เป็น Array ของ 'admin' | 'agent'
+          const roles = user.role.split(',') as ('admin' | 'agent')[];
           session = {
             id: user.id,
             username: user.username,
             name: user.fullName,
-            role: [user.role as 'admin' | 'agent']
+            role: roles
           };
         } else if (user) {
           log(`DB Pass Mismatch: ${username}`);
