@@ -1,0 +1,242 @@
+[
+  {
+    "productId": "al-vmi1",
+    "userId": "default",
+    "commissionRate": 10
+  },
+  {
+    "productId": "al-vmi2plus",
+    "userId": "default",
+    "commissionRate": 10
+  },
+  {
+    "productId": "al-vmi3plus",
+    "userId": "default",
+    "commissionRate": 10
+  },
+  {
+    "productId": "al-vmi2",
+    "userId": "default",
+    "commissionRate": 10
+  },
+  {
+    "productId": "al-vmi3",
+    "userId": "default",
+    "commissionRate": 10
+  },
+  {
+    "productId": "al-cmi",
+    "userId": "default",
+    "commissionRate": 10
+  },
+  {
+    "productId": "p-mock-1",
+    "userId": "default",
+    "commissionRate": 10
+  },
+  {
+    "productId": "p-mock-2",
+    "userId": "default",
+    "commissionRate": 10
+  },
+  {
+    "productId": "al-vmi1",
+    "userId": "8519a13f-1de4-481d-8572-b119d3750480",
+    "commissionRate": 18
+  },
+  {
+    "productId": "al-vmi2plus",
+    "userId": "8519a13f-1de4-481d-8572-b119d3750480",
+    "commissionRate": 18
+  },
+  {
+    "productId": "al-vmi3plus",
+    "userId": "8519a13f-1de4-481d-8572-b119d3750480",
+    "commissionRate": 18
+  },
+  {
+    "productId": "al-vmi2",
+    "userId": "8519a13f-1de4-481d-8572-b119d3750480",
+    "commissionRate": 18
+  },
+  {
+    "productId": "al-vmi3",
+    "userId": "8519a13f-1de4-481d-8572-b119d3750480",
+    "commissionRate": 18
+  },
+  {
+    "productId": "al-cmi",
+    "userId": "8519a13f-1de4-481d-8572-b119d3750480",
+    "commissionRate": 18
+  },
+  {
+    "productId": "p-mock-1",
+    "userId": "8519a13f-1de4-481d-8572-b119d3750480",
+    "commissionRate": 18
+  },
+  {
+    "productId": "p-mock-2",
+    "userId": "8519a13f-1de4-481d-8572-b119d3750480",
+    "commissionRate": 18
+  },
+  {
+    "productId": "al-vmi1",
+    "userId": "8d583457-6c4c-4e37-a8a1-261e84921160",
+    "commissionRate": 15
+  },
+  {
+    "productId": "al-vmi2plus",
+    "userId": "8d583457-6c4c-4e37-a8a1-261e84921160",
+    "commissionRate": 15
+  },
+  {
+    "productId": "al-vmi3plus",
+    "userId": "8d583457-6c4c-4e37-a8a1-261e84921160",
+    "commissionRate": 15
+  },
+  {
+    "productId": "al-vmi2",
+    "userId": "8d583457-6c4c-4e37-a8a1-261e84921160",
+    "commissionRate": 15
+  },
+  {
+    "productId": "al-vmi3",
+    "userId": "8d583457-6c4c-4e37-a8a1-261e84921160",
+    "commissionRate": 15
+  },
+  {
+    "productId": "al-cmi",
+    "userId": "8d583457-6c4c-4e37-a8a1-261e84921160",
+    "commissionRate": 15
+  },
+  {
+    "productId": "p-mock-1",
+    "userId": "8d583457-6c4c-4e37-a8a1-261e84921160",
+    "commissionRate": 15
+  },
+  {
+    "productId": "p-mock-2",
+    "userId": "8d583457-6c4c-4e37-a8a1-261e84921160",
+    "commissionRate": 15
+  },
+  {
+    "productId": "al-vmi1",
+    "userId": "d0fd63dc-b63d-4ef8-a980-e919b851f4e4",
+    "commissionRate": 12
+  },
+  {
+    "productId": "al-vmi2plus",
+    "userId": "d0fd63dc-b63d-4ef8-a980-e919b851f4e4",
+    "commissionRate": 12
+  },
+  {
+    "productId": "al-vmi3plus",
+    "userId": "d0fd63dc-b63d-4ef8-a980-e919b851f4e4",
+    "commissionRate": 12
+  },
+  {
+    "productId": "al-vmi2",
+    "userId": "d0fd63dc-b63d-4ef8-a980-e919b851f4e4",
+    "commissionRate": 12
+  },
+  {
+    "productId": "al-vmi3",
+    "userId": "d0fd63dc-b63d-4ef8-a980-e919b851f4e4",
+    "commissionRate": 12
+  },
+  {
+    "productId": "al-cmi",
+    "userId": "d0fd63dc-b63d-4ef8-a980-e919b851f4e4",
+    "commissionRate": 12
+  },
+  {
+    "productId": "p-mock-1",
+    "userId": "d0fd63dc-b63d-4ef8-a980-e919b851f4e4",
+    "commissionRate": 12
+  },
+  {
+    "productId": "p-mock-2",
+    "userId": "d0fd63dc-b63d-4ef8-a980-e919b851f4e4",
+    "commissionRate": 12
+  },
+  {
+    "productId": "al-vmi1",
+    "userId": "96762df7-8acb-4c0c-877f-b0b5df5bc405",
+    "commissionRate": 10
+  },
+  {
+    "productId": "al-vmi2plus",
+    "userId": "96762df7-8acb-4c0c-877f-b0b5df5bc405",
+    "commissionRate": 10
+  },
+  {
+    "productId": "al-vmi3plus",
+    "userId": "96762df7-8acb-4c0c-877f-b0b5df5bc405",
+    "commissionRate": 10
+  },
+  {
+    "productId": "al-vmi2",
+    "userId": "96762df7-8acb-4c0c-877f-b0b5df5bc405",
+    "commissionRate": 10
+  },
+  {
+    "productId": "al-vmi3",
+    "userId": "96762df7-8acb-4c0c-877f-b0b5df5bc405",
+    "commissionRate": 10
+  },
+  {
+    "productId": "al-cmi",
+    "userId": "96762df7-8acb-4c0c-877f-b0b5df5bc405",
+    "commissionRate": 10
+  },
+  {
+    "productId": "p-mock-1",
+    "userId": "96762df7-8acb-4c0c-877f-b0b5df5bc405",
+    "commissionRate": 10
+  },
+  {
+    "productId": "p-mock-2",
+    "userId": "96762df7-8acb-4c0c-877f-b0b5df5bc405",
+    "commissionRate": 10
+  },
+  {
+    "productId": "al-vmi1",
+    "userId": "cf53adb8-ed03-4c20-86bb-3968b0838072",
+    "commissionRate": 10
+  },
+  {
+    "productId": "al-vmi2plus",
+    "userId": "cf53adb8-ed03-4c20-86bb-3968b0838072",
+    "commissionRate": 10
+  },
+  {
+    "productId": "al-vmi3plus",
+    "userId": "cf53adb8-ed03-4c20-86bb-3968b0838072",
+    "commissionRate": 10
+  },
+  {
+    "productId": "al-vmi2",
+    "userId": "cf53adb8-ed03-4c20-86bb-3968b0838072",
+    "commissionRate": 10
+  },
+  {
+    "productId": "al-vmi3",
+    "userId": "cf53adb8-ed03-4c20-86bb-3968b0838072",
+    "commissionRate": 10
+  },
+  {
+    "productId": "al-cmi",
+    "userId": "cf53adb8-ed03-4c20-86bb-3968b0838072",
+    "commissionRate": 10
+  },
+  {
+    "productId": "p-mock-1",
+    "userId": "cf53adb8-ed03-4c20-86bb-3968b0838072",
+    "commissionRate": 10
+  },
+  {
+    "productId": "p-mock-2",
+    "userId": "cf53adb8-ed03-4c20-86bb-3968b0838072",
+    "commissionRate": 10
+  }
+]
