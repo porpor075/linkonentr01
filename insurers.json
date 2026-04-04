@@ -1,0 +1,23 @@
+[
+  {
+    "id": 1,
+    "nameTh": "อลิอันซ์ อยุธยา ประกันภัย",
+    "nameEn": "Allianz Ayudhya General Insurance",
+    "logoUrl": "/359240539_659435032882049_8783738146873119572_n.png",
+    "integrationType": "API",
+    "apiEndpoint": "https://asia-uat-th-pc.apis.allianz.com/v1",
+    "createdAt": "2026-03-29T10:00:00.000Z",
+    "lastStatus": "online",
+    "lastStatusMsg": "เชื่อมต่อสำเร็จ (231ms)",
+    "lastChecked": "2026-03-30T10:53:51.949Z"
+  },
+  {
+    "id": 2,
+    "nameTh": "บริษัทประกันทดสอบ",
+    "nameEn": "Mock Insurance Company",
+    "logoUrl": "https://img.icons8.com/color/96/shield.png",
+    "integrationType": "MANUAL",
+    "apiEndpoint": null,
+    "createdAt": "2026-03-29T11:00:00.000Z"
+  }
+]

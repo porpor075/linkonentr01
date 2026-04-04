@@ -124,7 +124,7 @@ export async function POST(request: Request) {
     });
 
     const nestedResults = await Promise.all(insurerPromises);
-    const allPlans = nestedResults.flat();
+    const allPlans = nestedResults.flat().filter(p => p && p.price !== null && p.price !== undefined && p.price > 0);
 
     const sortedPlans = allPlans.sort((a, b) => {
       const order: any = { 'VMI1': 1, 'VMI2+': 2, 'VMI3+': 3, 'VMI2': 4, 'VMI3': 5, 'CMI': 6 };
