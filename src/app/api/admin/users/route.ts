@@ -10,7 +10,7 @@ export async function GET() {
   }
 
   try {
-    const users = IdentityHub.getUsers().filter((u: any) => !u.deletedAt);
+    const users = await IdentityHub.getUsers();
     return NextResponse.json(users);
   } catch (error) {
     return NextResponse.json({ error: 'Failed to fetch users' }, { status: 500 });
@@ -24,20 +24,8 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { username, fullName, role, password } = await request.json();
-    const users = IdentityHub.getUsers();
-    
-    const newUser = {
-      id: `u-${Date.now()}`,
-      username,
-      fullName,
-      role: Array.isArray(role) ? role : [role],
-      password: password || 'password123',
-      createdAt: new Date().toISOString()
-    };
-    
-    users.push(newUser);
-    IdentityHub.saveUsers(users);
+    const body = await request.json();
+    const newUser = await IdentityHub.saveUser(body);
     return NextResponse.json(newUser);
   } catch (error) {
     return NextResponse.json({ error: 'Failed to create user' }, { status: 500 });
@@ -51,17 +39,9 @@ export async function PATCH(request: Request) {
   }
 
   try {
-    const { id, role, fullName } = await request.json();
-    const users = IdentityHub.getUsers();
-    const idx = users.findIndex((u: any) => u.id === id);
-    
-    if (idx !== -1) {
-      if (role) users[idx].role = Array.isArray(role) ? role : [role];
-      if (fullName) users[idx].fullName = fullName;
-      IdentityHub.saveUsers(users);
-      return NextResponse.json({ success: true });
-    }
-    return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    const body = await request.json();
+    const updatedUser = await IdentityHub.saveUser(body);
+    return NextResponse.json(updatedUser);
   } catch (error) {
     return NextResponse.json({ error: 'Update failed' }, { status: 500 });
   }
@@ -76,15 +56,11 @@ export async function DELETE(request: Request) {
   const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');
 
+  if (!id) return NextResponse.json({ error: 'ID is required' }, { status: 400 });
+
   try {
-    const users = IdentityHub.getUsers();
-    const idx = users.findIndex((u: any) => u.id === id);
-    if (idx !== -1) {
-      users[idx].deletedAt = new Date().toISOString();
-      IdentityHub.saveUsers(users);
-      return NextResponse.json({ success: true });
-    }
-    return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    await IdentityHub.deleteUser(id);
+    return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json({ error: 'Delete failed' }, { status: 500 });
   }
