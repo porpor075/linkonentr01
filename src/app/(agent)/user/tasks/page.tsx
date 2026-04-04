@@ -7,9 +7,34 @@ export default function TaskTracking() {
   const [filter, setFilter] = useState('all');
 
   const tasks = [
-    { id: 'T001', customer: 'คุณวิชัย เจริญยนต์', brand: 'Toyota Camry', status: 'issued', date: 'วันนี้ 09:15', premium: 18500, policyNo: 'POL-12345678' },
-    { id: 'T002', customer: 'คุณสมชาย รักไทย', brand: 'Honda Civic', status: 'pending', date: 'วันนี้ 11:30', premium: 15900 },
-    { id: 'T003', customer: 'คุณมาลี มีสุข', brand: 'Mazda 2', status: 'rejected', date: 'วานนี้ 14:00', reason: 'รูปภาพเลขเครื่องไม่ชัดเจน' },
+    { 
+      id: 'T001', customer: 'คุณวิชัย เจริญยนต์', brand: 'Toyota Camry 2024', 
+      status: 'issued', date: 'วันนี้ 09:15', premium: 18500, policyNo: 'POL-12345678',
+      planName: 'Allianz Care (ชั้น 1)'
+    },
+    { 
+      id: 'T002', customer: 'คุณสมชาย รักไทย', brand: 'Honda Civic 2023', 
+      status: 'pending', date: 'วันนี้ 11:30', premium: 15900,
+      step: 'กำลังตรวจสอบรูปถ่ายรถ (Step 2/3)',
+      planName: 'Allianz Safe (ชั้น 2+)'
+    },
+    { 
+      id: 'T003', customer: 'คุณมาลี มีสุข', brand: 'Mazda 2 (2022)', 
+      status: 'rejected', date: 'วานนี้ 14:00', premium: 6900,
+      reason: 'รูปภาพเลขตัวถัง (VIN) ไม่ชัดเจน กรุณาถ่ายใหม่',
+      planName: 'ประกันชั้น 3+ (Value Save)'
+    },
+    { 
+      id: 'T004', customer: 'คุณประเสริฐ ปลอดภัย', brand: 'Isuzu D-Max 2024', 
+      status: 'pending', date: 'วานนี้ 10:00', premium: 19200,
+      step: 'รอผลการพิจารณาจาก Allianz (Underwriting)',
+      planName: 'Allianz Care (ชั้น 1)'
+    },
+    { 
+      id: 'T005', customer: 'คุณสุนิสา มั่นคง', brand: 'Toyota Hilux Revo 2023', 
+      status: 'issued', date: '2 เม.ย. 15:30', premium: 645.21, policyNo: 'CMI-99887766',
+      planName: 'พ.ร.บ. รถยนต์ (Allianz CMI)'
+    }
   ];
 
   const filteredTasks = filter === 'all' ? tasks : tasks.filter(t => t.status === filter);
@@ -105,8 +130,9 @@ export default function TaskTracking() {
                       <p className="text-muted" style={{ fontSize: '0.75rem' }}>{task.date}</p>
                     </td>
                     <td style={{ padding: '1.25rem' }}>
-                      <p style={{ fontWeight: '600' }}>{task.customer}</p>
-                      <p className="text-muted" style={{ fontSize: '0.8rem' }}>{task.brand}</p>
+                      <p style={{ fontWeight: '600', marginBottom: '2px' }}>{task.customer}</p>
+                      <p className="text-muted" style={{ fontSize: '0.8rem' }}>{task.brand} • <span style={{ color: '#006aff' }}>{task.planName}</span></p>
+                      {task.status === 'pending' && <p style={{ fontSize: '0.75rem', color: '#f39c12', marginTop: '4px' }}>⏳ {task.step}</p>}
                     </td>
                     <td style={{ padding: '1.25rem' }}>{getStatusBadge(task.status)}</td>
                     <td style={{ padding: '1.25rem', fontWeight: 'bold', color: 'var(--zoho-accent)' }}>฿{task.premium?.toLocaleString()}</td>
@@ -143,8 +169,14 @@ export default function TaskTracking() {
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
                 <div>
                   <p className="text-muted" style={{ fontSize: '0.75rem' }}>{task.id} | {task.date}</p>
-                  <h3 style={{ fontSize: '1.1rem', marginTop: '0.25rem' }}>{task.customer}</h3>
-                  <p style={{ fontSize: '0.9rem' }}>{task.brand}</p>
+                  <h3 style={{ fontSize: '1.1rem', marginTop: '0.25rem', marginBottom: '4px' }}>{task.customer}</h3>
+                  <p style={{ fontSize: '0.85rem', color: '#666', margin: 0 }}>{task.brand}</p>
+                  <p style={{ fontSize: '0.8rem', color: '#006aff', fontWeight: '500' }}>{task.planName}</p>
+                  {task.status === 'pending' && (
+                    <p style={{ fontSize: '0.75rem', color: '#f39c12', marginTop: '8px', background: '#fff9db', padding: '4px 8px', borderRadius: '4px', display: 'inline-block' }}>
+                      ⏳ {task.step}
+                    </p>
+                  )}
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   {getStatusBadge(task.status)}
