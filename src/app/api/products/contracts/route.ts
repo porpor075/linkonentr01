@@ -40,7 +40,7 @@ export async function POST(request: Request) {
       planId: planId // ใช้ productId เพื่อคำนวณคอมมิชชัน
     };
 
-    if (insurer.integrationType === 'API' && insurer.nameEn.toLowerCase().includes('allianz')) {
+    if (insurer && insurer.integrationType === 'API' && insurer.nameEn?.toLowerCase().includes('allianz')) {
       try {
         const accessToken = await getAllianzAccessToken();
         const apiResponse = await createAllianzContract(accessToken, newPolicyData);
