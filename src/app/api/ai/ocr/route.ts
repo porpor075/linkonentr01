@@ -14,11 +14,11 @@ export async function POST(req: NextRequest) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // ลำดับโมเดลที่รองรับ (ใช้ชื่อล่าสุดที่ทดสอบแล้วผ่าน)
+    // ใช้ Gemini 2.5 Flash เป็นตัวหลักเพื่อความล้ำสมัยและแม่นยำสูง
     const modelsToTry = [
+      "gemini-2.5-flash",
       "gemini-flash-latest",
-      "gemini-2.0-flash", 
-      "gemini-1.5-flash-latest"
+      "gemini-2.0-flash"
     ];
 
     let lastError = null;
@@ -28,7 +28,22 @@ export async function POST(req: NextRequest) {
         console.log(`[OCR] Executing model: ${modelName}`);
         const model = genAI.getGenerativeModel({ model: modelName });
         
-        const prompt = "Extract car registration details from this image. Output ONLY JSON: {registrationNumber, brand, model, year, vin, engineNumber}. Use null if unsure.";
+        // ปรับ Prompt ให้เน้นย้ำความแม่นยำของภาษาไทย (กฎ, กถ, กฒ)
+        const prompt = `
+          Extract vehicle registration details from this Thai car registration document. 
+          Be extremely careful with Thai characters, especially similar ones like 'กฎ', 'กถ', 'กฒ', 'กก'.
+          
+          Respond ONLY with a JSON object:
+          {
+            "registrationNumber": "Full plate number, e.g., '8กฎ 8397'",
+            "brand": "Vehicle brand",
+            "model": "Vehicle model",
+            "year": "Registration year",
+            "vin": "17-digit VIN number",
+            "engineNumber": "Engine number"
+          }
+          If any field is unclear, use null.
+        `;
 
         const result = await model.generateContent([
           { text: prompt },
@@ -43,7 +58,6 @@ export async function POST(req: NextRequest) {
         const response = await result.response;
         const text = response.text();
         
-        // Clean and parse JSON
         const jsonMatch = text.match(/\{[\s\S]*\}/);
         const jsonStr = jsonMatch ? jsonMatch[0] : text;
         const data = JSON.parse(jsonStr);
@@ -57,7 +71,7 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ 
-      error: lastError?.status === 429 ? 'โควต้าการใช้งาน AI ของคุณหมดสำหรับวันนี้' : (lastError?.message || 'AI Processing Failed') 
+      error: lastError?.status === 429 ? 'โควต้า AI เต็ม' : (lastError?.message || 'AI Processing Failed') 
     }, { status: lastError?.status || 500 });
 
   } catch (error: any) {
