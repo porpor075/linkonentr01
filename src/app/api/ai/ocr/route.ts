@@ -16,8 +16,9 @@ export async function POST(req: NextRequest) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // เรียกใช้ Gemini Vision
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    // ดึงชื่อ Model จาก Environment Variable หรือใช้ค่าเริ่มต้น
+    const modelName = process.env.GEMINI_MODEL || "gemini-1.5-flash";
+    const model = genAI.getGenerativeModel({ model: modelName });
     
     const prompt = `
       Extract vehicle registration information from this image. 
