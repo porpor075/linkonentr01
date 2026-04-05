@@ -14,12 +14,11 @@ export async function POST(req: NextRequest) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // รายชื่อ Model ที่เราจะลองเรียก (ใช้ชื่อเต็มที่ระบบ Google ต้องการ)
+    // รายชื่อ Model ที่อัปเดตตาม Google AI Studio ล่าสุด
     const modelsToTry = [
-      "gemini-1.5-flash-001",
+      "gemini-2.0-flash", 
       "gemini-1.5-flash",
-      "gemini-1.5-flash-latest",
-      "gemini-pro-vision" // รุ่นเก่าสำหรับ Fallback
+      "gemini-flash-latest"
     ];
 
     let lastError = null;
@@ -29,7 +28,7 @@ export async function POST(req: NextRequest) {
         console.log(`[OCR] Executing model: ${modelName}`);
         const model = genAI.getGenerativeModel({ model: modelName });
         
-        const prompt = "Extract vehicle registration info. Output ONLY JSON: {registrationNumber, brand, model, year, vin, engineNumber}";
+        const prompt = "Extract car registration details from this image. Output ONLY JSON: {registrationNumber, brand, model, year, vin, engineNumber}. Use null if unsure.";
 
         const result = await model.generateContent([
           { text: prompt },
@@ -52,12 +51,15 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ success: true, data, usedModel: modelName });
       } catch (err: any) {
         lastError = err;
-        console.warn(`[OCR] ${modelName} failed, moving to next...`);
+        console.warn(`[OCR] ${modelName} failed:`, err.message);
+        // ถ้าติด Quota (429) ให้ลอง Model อื่นเผื่อโควต้าแยกกัน
         continue;
       }
     }
 
-    return NextResponse.json({ error: lastError?.message || 'AI Processing Failed' }, { status: 500 });
+    return NextResponse.json({ 
+      error: lastError?.status === 429 ? 'โควต้าการใช้งาน AI ของคุณหมดสำหรับวันนี้ กรุณาลองใหม่ในภายหลัง' : (lastError?.message || 'AI Processing Failed') 
+    }, { status: lastError?.status || 500 });
 
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
