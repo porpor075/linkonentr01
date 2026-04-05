@@ -12,6 +12,8 @@ export default function QuotationJourney() {
   const [selectedPlan, setSelectedPlan] = useState<any>(null);
   const [selectedVehicle, setSelectedVehicle] = useState<any>(null);
   const [policyResult, setPolicyResult] = useState<any>(null);
+  const [verifyModel, setVerifyModel] = useState('');
+  const [verifyYear, setVerifyYear] = useState('');
   const router = useRouter();
 
   // Master Data State
@@ -48,13 +50,15 @@ export default function QuotationJourney() {
     // Fetch Address Data
     fetch('/api/master/address').then(res => res.json()).then(data => {
       setAddressData(data);
-      const firstProvId = Object.keys(data)[0];
-      const firstDistId = Object.keys(data[firstProvId].districts)[0];
-      const firstSubId = Object.keys(data[firstProvId].districts[firstDistId].subdistricts)[0];
-      
-      setSelectedProvinceId(firstProvId);
-      setSelectedDistrictId(firstDistId);
-      setSelectedSubDistrictId(firstSubId);
+      if (data && Object.keys(data).length > 0) {
+        const firstProvId = Object.keys(data)[0];
+        const firstDistId = Object.keys(data[firstProvId].districts)[0];
+        const firstSubId = Object.keys(data[firstProvId].districts[firstDistId].subdistricts)[0];
+        
+        setSelectedProvinceId(firstProvId);
+        setSelectedDistrictId(firstDistId);
+        setSelectedSubDistrictId(firstSubId);
+      }
     });
   }, []);
 
@@ -135,8 +139,7 @@ export default function QuotationJourney() {
           premiumAmount: selectedPlan.price,
           planName: selectedPlan.planName,
           planId: selectedPlan.id,
-          quotationId: "Q-" + Date.now(),
-          userId: "current-user-id" // ควรได้จาก session
+          quotationId: "Q-" + Date.now()
         })
       });
       const data = await res.json();
@@ -157,6 +160,11 @@ export default function QuotationJourney() {
   const districts = Object.entries(addressData[selectedProvinceId]?.districts || {}).map(([id, d]: any) => ({ id, name: d.name }));
   const subdistricts = Object.entries(addressData[selectedProvinceId]?.districts[selectedDistrictId]?.subdistricts || {}).map(([id, s]: any) => ({ id, name: s.name, zipcode: s.zipcode }));
   const currentSub = addressData[selectedProvinceId]?.districts[selectedDistrictId]?.subdistricts[selectedSubDistrictId];
+
+  // Logic สำหรับตรวจสอบข้อมูลซ้ำ
+  const isVehicleVerified = 
+    (verifyModel.toUpperCase() === selectedVehicle?.modelName?.toUpperCase() || verifyModel === selectedVehicle?.model) && 
+    verifyYear === String(selectedVehicle?.year);
 
   return (
     <main style={{ padding: '20px' }}>
@@ -271,17 +279,56 @@ export default function QuotationJourney() {
 
           {step === 3 && addressData && addressData[selectedProvinceId] && (
             <div style={{ display: 'grid', gap: '1.5rem' }}>
-              <h3 style={{ fontSize: '1.1rem' }}>📋 ยืนยันข้อมูลสุดท้าย</h3>
+              <h3 style={{ fontSize: '1.1rem' }}>📋 ตรวจสอบข้อมูลและยืนยันการชำระเงิน</h3>
+              
               <div style={{ background: '#f8f9fa', padding: '1.5rem', borderRadius: '12px', border: '1px solid #eee' }}>
-                <p><strong>ผู้เอาประกัน:</strong> {formData.insured.firstName} {formData.insured.lastName}</p>
-                <p><strong>เลขบัตรประชาชน:</strong> {formData.insured.idCard}</p>
-                <p><strong>เลขทะเบียนรถ:</strong> {formData.vehicle.registrationNumber || 'ยังไม่ได้ระบุ'}</p>
-                <p><strong>เลขตัวถัง (VIN):</strong> {formData.vehicle.vin || 'ยังไม่ได้ระบุ'}</p>
-                <p><strong>ที่อยู่:</strong> {formData.insured.addressLine1} {currentSub?.name} {addressData[selectedProvinceId]?.districts[selectedDistrictId]?.name} {addressData[selectedProvinceId]?.name} {currentSub?.zipcode}</p>
+                <p style={{ marginBottom: '10px' }}><strong>ผู้เอาประกัน:</strong> {formData.insured.firstName} {formData.insured.lastName}</p>
+                <p style={{ marginBottom: '10px' }}><strong>เลขบัตรประชาชน:</strong> {formData.insured.idCard}</p>
+                <p style={{ marginBottom: '10px' }}><strong>เลขทะเบียนรถ:</strong> {formData.vehicle.registrationNumber || 'ยังไม่ได้ระบุ'}</p>
+                <p style={{ marginBottom: '10px' }}><strong>เลขตัวถัง (VIN):</strong> {formData.vehicle.vin || 'ยังไม่ได้ระบุ'}</p>
+                <p style={{ marginBottom: '0' }}><strong>ที่อยู่:</strong> {formData.insured.addressLine1} {currentSub?.name} {addressData[selectedProvinceId]?.districts[selectedDistrictId]?.name} {addressData[selectedProvinceId]?.name} {currentSub?.zipcode}</p>
               </div>
+
+              {/* ส่วนการยืนยันรุ่นรถ/ปีรถซ้ำ (Double Check) */}
+              <div style={{ background: '#fff9db', padding: '1.5rem', borderRadius: '12px', border: '1px solid #ffe066' }}>
+                <h4 style={{ fontSize: '0.95rem', color: '#856404', marginBottom: '1rem' }}>⚠️ ยืนยันข้อมูลรุ่นและปีรถเพื่อความถูกต้อง</h4>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div>
+                    <label className="label">ยืนยันรุ่นรถ (Model)</label>
+                    <input 
+                      className="input-field" 
+                      placeholder="เช่น CAMRY" 
+                      value={verifyModel} 
+                      onChange={e => setVerifyModel(e.target.value)} 
+                    />
+                  </div>
+                  <div>
+                    <label className="label">ยืนยันปีรถ (Year)</label>
+                    <input 
+                      className="input-field" 
+                      placeholder="เช่น 2024" 
+                      value={verifyYear} 
+                      onChange={e => setVerifyYear(e.target.value)} 
+                    />
+                  </div>
+                </div>
+                {verifyModel && verifyYear && (
+                  <p style={{ fontSize: '0.8rem', marginTop: '10px', color: isVehicleVerified ? '#2f9e44' : '#e03131' }}>
+                    {isVehicleVerified ? '✅ ข้อมูลถูกต้องตรงกัน' : '❌ ข้อมูลไม่ตรงกับแผนที่เลือกไว้'}
+                  </p>
+                )}
+              </div>
+
               <div style={{ display: 'flex', gap: '1rem' }}>
                 <button onClick={() => setStep(2)} className="btn-secondary" style={{ flex: 1, borderRadius: '50px', padding: '14px', height: '50px' }}>ย้อนกลับ</button>
-                <button onClick={handleSubmit} disabled={loading} className="btn-primary" style={{ flex: 2, borderRadius: '50px', padding: '14px', height: '50px' }}>{loading ? 'กำลังออกกรมธรรม์...' : 'ยืนยันและออกกรมธรรม์'}</button>
+                <button 
+                  onClick={handleSubmit} 
+                  disabled={loading || !isVehicleVerified} 
+                  className="btn-primary" 
+                  style={{ flex: 2, borderRadius: '50px', padding: '14px', height: '50px', opacity: (loading || !isVehicleVerified) ? 0.5 : 1 }}
+                >
+                  {loading ? 'กำลังออกกรมธรรม์...' : 'ชำระเงินและออกกรมธรรม์'}
+                </button>
               </div>
             </div>
           )}
