@@ -17,7 +17,13 @@ export async function POST(req: NextRequest) {
     const buffer = Buffer.from(arrayBuffer);
 
     // ดึงชื่อ Model จาก Environment Variable หรือใช้ค่าเริ่มต้น
-    const modelName = process.env.GEMINI_MODEL || "gemini-1.5-flash";
+    let modelName = process.env.GEMINI_MODEL || "gemini-1.5-flash";
+    
+    // ตรวจสอบความถูกต้องของชื่อ Model (ต้องขึ้นต้นด้วย models/)
+    if (!modelName.startsWith('models/')) {
+      modelName = `models/${modelName}`;
+    }
+    
     const model = genAI.getGenerativeModel({ model: modelName });
     
     const prompt = `
