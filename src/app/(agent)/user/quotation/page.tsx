@@ -8,6 +8,7 @@ export default function QuotationJourney() {
   const [mounted, setMounted] = useState(false);
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [ocrLoading, setOcrLoading] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<any>(null);
   const [selectedVehicle, setSelectedVehicle] = useState<any>(null);
   const [policyResult, setPolicyResult] = useState<any>(null);
@@ -28,6 +29,9 @@ export default function QuotationJourney() {
     insured: {
       title: 'MR', firstName: '', lastName: '', idCard: '', birthDate: '1995-01-01',
       gender: 'MALE', phone: '', email: '', addressLine1: '', nationality: 'TH', occupation: '1'
+    },
+    vehicle: {
+      registrationNumber: '', vin: '', engineNumber: '', brand: '', model: '', year: ''
     }
   });
 
@@ -53,6 +57,41 @@ export default function QuotationJourney() {
       setSelectedSubDistrictId(firstSubId);
     });
   }, []);
+
+  const handleOCR = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setOcrLoading(true);
+    const body = new FormData();
+    body.append('file', file);
+
+    try {
+      const res = await fetch('/api/ai/ocr', { method: 'POST', body });
+      const result = await res.json();
+      if (result.success) {
+        setFormData(prev => ({
+          ...prev,
+          vehicle: {
+            ...prev.vehicle,
+            registrationNumber: result.data.registrationNumber || prev.vehicle.registrationNumber,
+            vin: result.data.vin || prev.vehicle.vin,
+            engineNumber: result.data.engineNumber || prev.vehicle.engineNumber,
+            brand: result.data.brand || selectedVehicle?.brandName || '',
+            model: result.data.model || selectedVehicle?.modelName || '',
+            year: result.data.year || selectedVehicle?.year || ''
+          }
+        }));
+        alert('AI สแกนข้อมูลและกรอกให้เรียบร้อยแล้ว กรุณาตรวจสอบความถูกต้อง');
+      } else {
+        alert('AI ไม่สามารถอ่านข้อมูลได้: ' + result.error);
+      }
+    } catch (err) {
+      alert('เกิดข้อผิดพลาดในการเชื่อมต่อระบบ AI');
+    } finally {
+      setOcrLoading(false);
+    }
+  };
 
   const handleProvinceChange = (id: string) => {
     setSelectedProvinceId(id);
@@ -90,11 +129,14 @@ export default function QuotationJourney() {
             make: selectedVehicle?.brand || "16", 
             model: selectedVehicle?.model || "1041", 
             yearOfManufacture: selectedVehicle?.year || "2024", 
-            vin: "KNDJA" + Date.now() 
+            registrationNumber: formData.vehicle.registrationNumber,
+            vin: formData.vehicle.vin || ("KNDJA" + Date.now()) 
           },
           premiumAmount: selectedPlan.price,
           planName: selectedPlan.planName,
-          planId: selectedPlan.id
+          planId: selectedPlan.id,
+          quotationId: "Q-" + Date.now(),
+          userId: "current-user-id" // ควรได้จาก session
         })
       });
       const data = await res.json();
@@ -124,7 +166,7 @@ export default function QuotationJourney() {
       </header>
 
       <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
-        {['1. ข้อมูลผู้เอาประกัน', '2. ที่อยู่ติดต่อ', '3. ตรวจสอบข้อมูล', '4. สำเร็จ'].map((label, idx) => (
+        {['1. ข้อมูลผู้เอาประกัน', '2. ข้อมูลรถ & ที่อยู่', '3. ตรวจสอบข้อมูล', '4. สำเร็จ'].map((label, idx) => (
           <div key={idx} style={{ flex: 1, padding: '10px', textAlign: 'center', borderBottom: `4px solid ${step >= idx + 1 ? '#006aff' : '#eee'}`, color: step >= idx + 1 ? '#333' : '#999', fontWeight: 'bold', fontSize: '0.85rem' }}>
             {label}
           </div>
@@ -173,7 +215,27 @@ export default function QuotationJourney() {
 
           {step === 2 && (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-              <h3 style={{ gridColumn: 'span 2', fontSize: '1.1rem' }}>📍 ที่อยู่ตามทะเบียนบ้าน</h3>
+              <h3 style={{ gridColumn: 'span 2', fontSize: '1.1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                🚗 ข้อมูลรถยนต์ที่จดทะเบียน
+                <label style={{ fontSize: '0.8rem', background: '#f39c12', color: 'white', padding: '6px 12px', borderRadius: '50px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  {ocrLoading ? '⏳ กำลังสแกน...' : '🤖 สแกนเล่มทะเบียน (OCR)'}
+                  <input type="file" accept="image/*" onChange={handleOCR} hidden disabled={ocrLoading} />
+                </label>
+              </h3>
+              <div>
+                <label className="label">เลขทะเบียนรถ</label>
+                <input className="input-field" placeholder="เช่น กข 1234" value={formData.vehicle.registrationNumber} onChange={e => setFormData({...formData, vehicle: {...formData.vehicle, registrationNumber: e.target.value}})} />
+              </div>
+              <div>
+                <label className="label">เลขตัวถัง (VIN)</label>
+                <input className="input-field" placeholder="17 หลัก" value={formData.vehicle.vin} onChange={e => setFormData({...formData, vehicle: {...formData.vehicle, vin: e.target.value}})} />
+              </div>
+
+              <div style={{ gridColumn: 'span 2' }}>
+                <hr style={{ border: 'none', borderTop: '1px solid #eee', margin: '0.5rem 0' }} />
+                <h3 style={{ fontSize: '1.1rem', marginTop: '1rem' }}>📍 ที่อยู่ตามทะเบียนบ้าน</h3>
+              </div>
+
               <div style={{ gridColumn: 'span 2' }}>
                 <label className="label">บ้านเลขที่ / หมู่บ้าน / อาคาร</label>
                 <input className="input-field" value={formData.insured.addressLine1} onChange={e => setFormData({...formData, insured: {...formData.insured, addressLine1: e.target.value}})} />
@@ -213,6 +275,8 @@ export default function QuotationJourney() {
               <div style={{ background: '#f8f9fa', padding: '1.5rem', borderRadius: '12px', border: '1px solid #eee' }}>
                 <p><strong>ผู้เอาประกัน:</strong> {formData.insured.firstName} {formData.insured.lastName}</p>
                 <p><strong>เลขบัตรประชาชน:</strong> {formData.insured.idCard}</p>
+                <p><strong>เลขทะเบียนรถ:</strong> {formData.vehicle.registrationNumber || 'ยังไม่ได้ระบุ'}</p>
+                <p><strong>เลขตัวถัง (VIN):</strong> {formData.vehicle.vin || 'ยังไม่ได้ระบุ'}</p>
                 <p><strong>ที่อยู่:</strong> {formData.insured.addressLine1} {currentSub?.name} {addressData[selectedProvinceId]?.districts[selectedDistrictId]?.name} {addressData[selectedProvinceId]?.name} {currentSub?.zipcode}</p>
               </div>
               <div style={{ display: 'flex', gap: '1rem' }}>
@@ -239,7 +303,7 @@ export default function QuotationJourney() {
           <h3 style={{ fontSize: '1rem', borderBottom: '1px solid #333', paddingBottom: '10px', marginBottom: '1rem', color: 'white' }}>สรุปความคุ้มครอง</h3>
           <div style={{ marginBottom: '1.5rem' }}>
             <p style={{ fontSize: '0.8rem', color: '#888', margin: 0 }}>บริษัทประกัน</p>
-            <p style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>Allianz Ayudhya</p>
+            <p style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>{selectedPlan.name}</p>
           </div>
           <div style={{ marginBottom: '1.5rem' }}>
             <p style={{ fontSize: '0.8rem', color: '#888', margin: 0 }}>แผนประกัน</p>
