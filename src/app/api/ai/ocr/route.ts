@@ -14,11 +14,11 @@ export async function POST(req: NextRequest) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // รายชื่อ Model ที่อัปเดตตาม Google AI Studio ล่าสุด
+    // ลำดับโมเดลที่รองรับ (ใช้ชื่อล่าสุดที่ทดสอบแล้วผ่าน)
     const modelsToTry = [
+      "gemini-flash-latest",
       "gemini-2.0-flash", 
-      "gemini-1.5-flash",
-      "gemini-flash-latest"
+      "gemini-1.5-flash-latest"
     ];
 
     let lastError = null;
@@ -52,13 +52,12 @@ export async function POST(req: NextRequest) {
       } catch (err: any) {
         lastError = err;
         console.warn(`[OCR] ${modelName} failed:`, err.message);
-        // ถ้าติด Quota (429) ให้ลอง Model อื่นเผื่อโควต้าแยกกัน
         continue;
       }
     }
 
     return NextResponse.json({ 
-      error: lastError?.status === 429 ? 'โควต้าการใช้งาน AI ของคุณหมดสำหรับวันนี้ กรุณาลองใหม่ในภายหลัง' : (lastError?.message || 'AI Processing Failed') 
+      error: lastError?.status === 429 ? 'โควต้าการใช้งาน AI ของคุณหมดสำหรับวันนี้' : (lastError?.message || 'AI Processing Failed') 
     }, { status: lastError?.status || 500 });
 
   } catch (error: any) {
