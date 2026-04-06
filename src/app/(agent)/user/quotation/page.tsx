@@ -261,16 +261,16 @@ export default function QuotationJourney() {
               <div className="sub-step-card">
                 <h4 className="sub-step-title">3.1 เลือกปลายทางรับเงิน</h4>
                 <div style={{ display: 'flex', gap: '10px' }}>
-                  <button onClick={() => setPaymentTarget('NTR')} className={`choice-btn \${paymentTarget === 'NTR' ? 'active' : ''}\`}>โอนเข้า NTR Broker</button>
-                  <button onClick={() => setPaymentTarget('INSURER')} className={`choice-btn \${paymentTarget === 'INSURER' ? 'active' : ''}\`}>โอนตรงบริษัทประกัน</button>
+                  <button onClick={() => setPaymentTarget('NTR')} className={`choice-btn ${paymentTarget === 'NTR' ? 'active' : ''}`}>โอนเข้า NTR Broker</button>
+                  <button onClick={() => setPaymentTarget('INSURER')} className={`choice-btn ${paymentTarget === 'INSURER' ? 'active' : ''}`}>โอนตรงบริษัทประกัน</button>
                 </div>
               </div>
 
               <div className="sub-step-card">
                 <h4 className="sub-step-title">3.2 เลือกรูปแบบยอดชำระ</h4>
                 <div style={{ display: 'flex', gap: '10px' }}>
-                  <button onClick={() => setPaymentMode('NET')} className={`choice-btn \${paymentMode === 'NET' ? 'active' : ''}\`}>จ่ายยอด NET (หักค่าคอมฯ)</button>
-                  <button onClick={() => setPaymentMode('GROSS')} className={`choice-btn \${paymentMode === 'GROSS' ? 'active' : ''}\`}>จ่ายยอดเต็ม (ไม่หักคอมฯ)</button>
+                  <button onClick={() => setPaymentMode('NET')} className={`choice-btn ${paymentMode === 'NET' ? 'active' : ''}`}>จ่ายยอด NET (หักค่าคอมฯ)</button>
+                  <button onClick={() => setPaymentMode('GROSS')} className={`choice-btn ${paymentMode === 'GROSS' ? 'active' : ''}`}>จ่ายยอดเต็ม (ไม่หักคอมฯ)</button>
                 </div>
               </div>
 
