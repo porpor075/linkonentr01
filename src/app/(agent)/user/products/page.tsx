@@ -272,8 +272,18 @@ export default function ConsistentProductSearch() {
                       <td style={{ padding: '1rem', textAlign: 'right' }}>
                         <button 
                           onClick={() => { 
+                            // ค้นหาชื่อยี่ห้อและรุ่นจาก Master Data
+                            const selectedBrand = master.brands.find(b => b.code === vehicle.brand);
+                            const selectedModel = (master.models[vehicle.brand] || []).find((m: any) => m.code === vehicle.model);
+
+                            const fullVehicleData = {
+                              ...vehicle,
+                              brandName: selectedBrand?.name || 'N/A',
+                              modelName: selectedModel?.name || 'N/A'
+                            };
+
                             localStorage.setItem('selectedPlan', JSON.stringify(plan)); 
-                            localStorage.setItem('selectedVehicle', JSON.stringify(vehicle)); 
+                            localStorage.setItem('selectedVehicle', JSON.stringify(fullVehicleData)); 
                             router.push('/user/quotation'); 
                           }} 
                           className="btn-primary" 
