@@ -40,7 +40,7 @@ export async function POST(request: Request) {
                 model: body.model || '1041',
                 productCode: isCMI ? 'CMI' : 'VMI',
                 planType: product.planCode,
-                sumInsured: isCMI ? 0 : (product.planCode === 'VMI1' ? (body.sumInsured || body.listSumInsured || 500000) : 100000),
+                sumInsured: isCMI ? 0 : (body.sumInsured || body.listSumInsured || (product.planCode === 'VMI1' ? 500000 : 100000)),
                 garageType: isCMI ? 'UNSPECIFIED' : (body.garageType || product.repairType || 'COMPANY')
               };
 
