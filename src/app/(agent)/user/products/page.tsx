@@ -11,7 +11,6 @@ export default function ConsistentProductSearch() {
   const [plans, setPlans] = useState<any[]>([]);
   const [availablePlanTypes, setAvailablePlanTypes] = useState<any[]>([]);
   const [debugMsg, setDebugMsg] = useState('');
-  const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
   const [searchMode, setSearchMode] = useState<'single' | 'multiple'>('single');
   
   // Master Data State
@@ -49,18 +48,14 @@ export default function ConsistentProductSearch() {
         }
       });
 
-    // Fetch Plan Types (จากทุกบริษัท)
+    // Fetch Plan Types
     fetch('/api/admin/products')
-      .then(async res => {
-        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-        return res.json();
-      })
+      .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
           const activePlans = data.filter(p => p.isActive);
           setAvailablePlanTypes(activePlans);
           if (activePlans.length > 0) {
-            // ล็อกค่า VMI1 เป็นค่าเริ่มต้นถ้ามี
             const defaultPlan = activePlans.find(p => p.planCode === 'VMI1') || activePlans[0];
             setVehicle(prev => ({ ...prev, planType: defaultPlan.planCode }));
           }
@@ -69,7 +64,7 @@ export default function ConsistentProductSearch() {
       .catch(err => console.error('Failed to fetch available plans:', err));
   }, []);
 
-  // 2. Fetch Sum Insured Range when Vehicle selection changes
+  // 2. Fetch Sum Insured Range
   useEffect(() => {
     if (vehicle.brand && vehicle.model && vehicle.year) {
       fetch(`/api/master/sum-insured?brand=${vehicle.brand}&model=${vehicle.model}&year=${vehicle.year}`)
@@ -86,7 +81,6 @@ export default function ConsistentProductSearch() {
     setLoading(true);
     setPlans([]);
     setDebugMsg('');
-    setExpandedIdx(null);
     try {
       const res = await fetch('/api/products/rates', {
         method: 'POST',
@@ -100,13 +94,8 @@ export default function ConsistentProductSearch() {
       });
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       const data = await res.json();
-      console.log('--- API RESPONSE DEBUG ---');
-      console.log('Status:', data.status);
-      console.log('Plans Count:', data.plans?.length);
-      console.log('Plans Data:', data.plans);
       
       const formattedPlans = (data.plans || []).map((p: any) => {
-        // หาค่าทุนประกัน: ลองหาจาก coverages (API) หรือใช้ confirmedSumInsured (Manual)
         let sumInsuredVal = p.confirmedSumInsured || 'N/A';
         const odCoverage = p.coverages?.find((c: any) => c.code === 'OD' || c.title?.includes('ทุน'));
         if (odCoverage) sumInsuredVal = odCoverage.value;
@@ -125,210 +114,205 @@ export default function ConsistentProductSearch() {
 
   if (!mounted) return null;
 
-  const currentModels = master.models[vehicle.brand] || [];
-
   return (
-    <main style={{ padding: '20px' }}>
-      <header style={{ marginBottom: '2rem' }}>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>เช็คเบี้ยประกันภัย (UAT Master Data)</h1>
-        <p style={{ color: '#666' }}>ระบบเปรียบเทียบเบี้ยประกันภัยออนไลน์พร้อมข้อมูลจริง Q1/2026</p>
+    <main style={{ background: '#f8f9fa', minHeight: '100vh', padding: '24px', fontFamily: 'Sarabun, sans-serif' }}>
+      {/* 1. Vehicle Summary Header */}
+      <header style={{ 
+        background: 'white', padding: '16px 24px', borderRadius: '16px', marginBottom: '24px',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <span style={{ fontSize: '1.5rem' }}>🚗</span>
+          <div>
+            <h2 style={{ fontSize: '1.1rem', fontWeight: '700', margin: 0, color: '#333' }}>
+              {master.brands.find(b => b.code === vehicle.brand)?.name || 'Toyota'} {master.models[vehicle.brand]?.find((m: any) => m.code === vehicle.model)?.name || 'Camry'}
+            </h2>
+            <p style={{ fontSize: '0.9rem', color: '#666', margin: 0 }}>ปี {vehicle.year || '2024'} • {FUEL_TYPES.find(f => f.code === vehicle.fuelType)?.name || 'Hybrid'}</p>
+          </div>
+        </div>
+        <button onClick={() => router.push('/user/dashboard')} style={{ 
+          padding: '8px 20px', borderRadius: '10px', border: '1px solid #eee', background: 'white', 
+          fontWeight: '600', cursor: 'pointer', transition: '0.2s'
+        }}>
+          ✏️ แก้ไขข้อมูล
+        </button>
       </header>
 
-      <div className="adaptive-grid" style={{ display: 'grid', gridTemplateColumns: '350px 1fr', gap: '2rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: '24px' }}>
         
-        <section className="card" style={{ padding: '1.5rem', borderRadius: '16px', background: 'white', border: '1px solid #eee' }}>
-          <div style={{ display: 'flex', borderBottom: '2px solid #eee', marginBottom: '1.5rem' }}>
-            <button 
-              onClick={() => setSearchMode('single')} 
-              style={{ 
-                flex: 1, padding: '10px', border: 'none', background: 'none', cursor: 'pointer',
-                borderBottom: searchMode === 'single' ? '3px solid #006aff' : 'none',
-                color: searchMode === 'single' ? '#006aff' : '#999', fontWeight: 'bold'
-              }}
-            >
-              เช็คแผนเดียว
-            </button>
-            <button 
-              onClick={() => setSearchMode('multiple')} 
-              style={{ 
-                flex: 1, padding: '10px', border: 'none', background: 'none', cursor: 'pointer',
-                borderBottom: searchMode === 'multiple' ? '3px solid #006aff' : 'none',
-                color: searchMode === 'multiple' ? '#006aff' : '#999', fontWeight: 'bold'
-              }}
-            >
-              เช็คหลายแผน
-            </button>
-          </div>
-          <h3 style={{ fontSize: '1rem', fontWeight: 'bold', marginBottom: '1.5rem', borderBottom: '1px solid #eee', paddingBottom: '10px' }}>🚗 ข้อมูลรถยนต์</h3>
-          
-          <div style={{ display: 'flex', gap: '10px', marginBottom: '1.5rem' }}>
-            <button onClick={() => setInsuranceCategory('VMI')} style={{ flex: 1, padding: '10px', borderRadius: '10px', border: '1px solid #ddd', background: insuranceCategory === 'VMI' ? '#006aff' : 'white', color: insuranceCategory === 'VMI' ? 'white' : '#333', fontWeight: 'bold', cursor: 'pointer' }}>VMI</button>
-            <button onClick={() => setInsuranceCategory('CMI')} style={{ flex: 1, padding: '10px', borderRadius: '10px', border: '1px solid #ddd', background: insuranceCategory === 'CMI' ? '#006aff' : 'white', color: insuranceCategory === 'CMI' ? 'white' : '#333', fontWeight: 'bold', cursor: 'pointer' }}>CMI</button>
-          </div>
+        {/* 2. Filters Sidebar */}
+        <aside style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <div style={{ padding: '24px', borderRadius: '20px', background: 'white', border: '1px solid #eee', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
+            <h3 style={{ fontSize: '1rem', fontWeight: '700', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              ตัวกรอง 
+              <span onClick={() => window.location.reload()} style={{ color: '#008060', fontSize: '0.8rem', cursor: 'pointer', fontWeight: '500' }}>ล้างค่า</span>
+            </h3>
+            
+            <div style={{ marginBottom: '28px' }}>
+              <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: '700', marginBottom: '16px', color: '#444' }}>ประเภทการซ่อม</label>
+              <div style={{ display: 'grid', gap: '12px' }}>
+                {['ซ่อมศูนย์ (ห้าง)', 'ซ่อมอู่'].map(type => (
+                  <label key={type} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.9rem', cursor: 'pointer', color: '#555' }}>
+                    <input type="checkbox" defaultChecked style={{ width: '20px', height: '20px', accentColor: '#008060', cursor: 'pointer' }} /> {type}
+                  </label>
+                ))}
+              </div>
+            </div>
 
-          <div style={{ display: 'grid', gap: '1.2rem' }}>
+            <div style={{ marginBottom: '28px' }}>
+              <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: '700', marginBottom: '16px', color: '#444' }}>ค่าเสียหายส่วนแรก</label>
+              <div style={{ display: 'grid', gap: '12px' }}>
+                {['ไม่มีค่าเสียหายส่วนแรก', '3,000 บาท', '5,000 บาท'].map(val => (
+                  <label key={val} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.9rem', cursor: 'pointer', color: '#555' }}>
+                    <input type="checkbox" style={{ width: '20px', height: '20px', accentColor: '#008060', cursor: 'pointer' }} /> {val}
+                  </label>
+                ))}
+              </div>
+            </div>
+
             <div>
-              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 'bold', color: '#888', marginBottom: '5px' }}>ยี่ห้อรถยนต์</label>
-              <select 
-                style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #eee' }} 
-                value={vehicle.brand} 
-                onChange={e => {
-                  const newBrand = e.target.value;
-                  const firstModel = master.models[newBrand]?.[0]?.code || '';
-                  setVehicle({...vehicle, brand: newBrand, model: firstModel});
+              <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: '700', marginBottom: '16px', color: '#444' }}>ทุนประกัน</label>
+              <select style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid #ddd', outline: 'none', fontSize: '0.9rem' }}>
+                <option>ทั้งหมด</option>
+                <option>300,000 - 500,000</option>
+                <option>500,000 - 700,000</option>
+                <option>700,000 ขึ้นไป</option>
+              </select>
+            </div>
+          </div>
+        </aside>
+
+        {/* 3. Main Results Area */}
+        <section>
+          {/* Plan Tabs */}
+          <div style={{ 
+            background: 'white', padding: '6px', borderRadius: '16px', border: '1px solid #eee', 
+            display: 'flex', marginBottom: '24px', boxShadow: '0 2px 10px rgba(0,0,0,0.02)'
+          }}>
+            {['VMI1', 'VMI2+', 'VMI2', 'VMI3+', 'VMI3'].map(p => (
+              <button 
+                key={p}
+                onClick={() => {
+                  setVehicle({...vehicle, planType: p});
+                  handleSearch();
+                }}
+                style={{ 
+                  flex: 1, padding: '14px', border: 'none', 
+                  background: vehicle.planType === p ? '#E6F2ED' : 'transparent',
+                  borderRadius: '12px', color: vehicle.planType === p ? '#008060' : '#777', 
+                  fontWeight: '700', cursor: 'pointer', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  border: vehicle.planType === p ? '1.5px solid #008060' : '1.5px solid transparent'
                 }}
               >
-                {master.brands.map(b => <option key={b.code} value={b.code}>{b.name}</option>)}
-              </select>
-            </div>
-            <div>
-              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 'bold', color: '#888', marginBottom: '5px' }}>รุ่นรถยนต์</label>
-              <select style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #eee' }} value={vehicle.model} onChange={e => setVehicle({...vehicle, model: e.target.value})}>
-                {currentModels.map((m: any) => <option key={m.code} value={m.code}>{m.name}</option>)}
-              </select>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 'bold', color: '#888', marginBottom: '5px' }}>ปีจดทะเบียน</label>
-                <select style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #eee' }} value={vehicle.year} onChange={e => setVehicle({...vehicle, year: e.target.value})}>
-                  {master.years.map(y => <option key={y} value={y}>{y}</option>)}
-                </select>
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 'bold', color: '#888', marginBottom: '5px' }}>เชื้อเพลิง</label>
-                <select style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #eee' }} value={vehicle.fuelType} onChange={e => setVehicle({...vehicle, fuelType: e.target.value})}>
-                  {FUEL_TYPES.map(f => <option key={f.code} value={f.code}>{f.name}</option>)}
-                </select>
-              </div>
-            </div>
-
-            {insuranceCategory === 'VMI' && searchMode === 'single' && (
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 'bold', color: '#888', marginBottom: '5px' }}>
-                  ทุนประกัน: ฿{vehicle.sumInsured?.toLocaleString() || '0'}
-                </label>
-                <input 
-                  type="range" 
-                  min={siRange.min} 
-                  max={siRange.max} 
-                  step="10000" 
-                  style={{ width: '100%' }} 
-                  value={vehicle.sumInsured} 
-                  onChange={e => setVehicle({...vehicle, sumInsured: Number(e.target.value)})} 
-                />
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: '#999' }}>
-                  <span>Min: ฿{siRange.min.toLocaleString()}</span>
-                  <span>Max: ฿{siRange.max.toLocaleString()}</span>
-                </div>
-              </div>
-            )}
-
-            {searchMode === 'multiple' && (
-              <div style={{ background: '#f0f7ff', padding: '10px', borderRadius: '8px', fontSize: '0.8rem', color: '#006aff' }}>
-                💡 ระบบจะดึงข้อมูลเบี้ยประกันของทุกแผนที่มี (1, 2+, 3+) มาแสดงเปรียบเทียบกันโดยอัตโนมัติ
-              </div>
-            )}
-
-            <button onClick={handleSearch} disabled={loading} className="btn-primary" style={{ marginTop: '1rem', padding: '14px', borderRadius: '50px', fontWeight: 'bold' }}>
-              {loading ? 'กำลังค้นหาเบี้ย...' : '🔍 ค้นหาเบี้ยประกัน'}
-            </button>
-            {debugMsg && <p style={{ color: 'red', fontSize: '0.8rem', textAlign: 'center' }}>{debugMsg}</p>}
+                {p === 'VMI1' ? 'ชั้น 1' : p === 'VMI2+' ? 'ชั้น 2+' : p === 'VMI2' ? 'ชั้น 2' : p === 'VMI3+' ? 'ชั้น 3+' : 'ชั้น 3'}
+              </button>
+            ))}
           </div>
-        </section>
 
-        <section>
-          <div className="card" style={{ padding: 0, overflow: 'hidden', borderRadius: '16px', background: 'white', border: '1px solid #eee' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-              <thead style={{ background: '#f8f9fa', borderBottom: '1px solid #ddd' }}>
-                <tr>
-                  <th style={{ padding: '1rem', fontSize: '0.85rem' }}>แผนประกัน</th>
-                  <th style={{ padding: '1rem', fontSize: '0.85rem' }}>ทุนประกัน</th>
-                  <th style={{ padding: '1rem', fontSize: '0.85rem', textAlign: 'right' }}>เบี้ยสุทธิ</th>
-                  <th style={{ padding: '1rem', fontSize: '0.85rem', textAlign: 'right' }}>จัดการ</th>
-                </tr>
-              </thead>
-              <tbody>
-                {plans.map((plan, idx) => (
-                  <React.Fragment key={idx}>
-                    <tr style={{ borderBottom: expandedIdx === idx ? 'none' : '1px solid #f5f5f5' }}>
-                      <td style={{ padding: '1rem' }}>
-                        <p style={{ fontWeight: 'bold', margin: 0, color: '#006aff' }}>{plan.planName}</p>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                           {plan.logoUrl && <img src={plan.logoUrl} alt={plan.name} style={{ height: '16px', objectFit: 'contain' }} />}
-                           <small style={{ color: '#888' }}>{plan.name} • {plan.repairType || 'ซ่อมตามแผน'}</small>
-                           <button onClick={() => setExpandedIdx(expandedIdx === idx ? null : idx)} style={{ background: 'none', border: 'none', color: '#006aff', fontSize: '0.75rem', cursor: 'pointer', padding: 0 }}>
-                             {expandedIdx === idx ? '▲ ปิดรายละเอียด' : '▼ ดูความคุ้มครอง'}
-                           </button>
+          {/* Results List */}
+          <div style={{ display: 'grid', gap: '20px' }}>
+            {loading ? (
+              <div style={{ textAlign: 'center', padding: '120px', background: 'white', borderRadius: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
+                <div className="spinner" style={{ width: '40px', height: '40px', border: '4px solid #f3f3f3', borderTop: '4px solid #008060', borderRadius: '50%', margin: '0 auto 20px auto', animation: 'spin 1s linear infinite' }}></div>
+                <p style={{ color: '#666', fontWeight: '500' }}>กำลังคำนวณเบี้ยประกันที่ดีที่สุดสำหรับคุณ...</p>
+              </div>
+            ) : plans.length > 0 ? (
+              plans.map((plan, idx) => (
+                <div key={idx} style={{ 
+                  background: 'white', borderRadius: '24px', border: '1px solid #eee', overflow: 'hidden',
+                  display: 'grid', gridTemplateColumns: '1.3fr 1fr', boxShadow: '0 10px 30px rgba(0,0,0,0.04)',
+                  transition: 'transform 0.2s', cursor: 'default'
+                }}>
+                  {/* Left: Info */}
+                  <div style={{ padding: '32px', borderRight: '1px solid #f8f8f8' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                          <h4 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '800', color: '#1a1a1a' }}>{plan.name}</h4>
+                          <span style={{ padding: '2px 8px', borderRadius: '6px', background: '#f0f0f0', fontSize: '0.7rem', fontWeight: '700', color: '#666' }}>{plan.planType}</span>
                         </div>
-                      </td>
-                      <td style={{ padding: '1rem', fontWeight: 'bold' }}>
-                        {typeof plan.confirmedSumInsured === 'number' 
-                          ? `฿${plan.confirmedSumInsured.toLocaleString()}` 
-                          : plan.confirmedSumInsured}
-                      </td>
-                      <td style={{ padding: '1rem', textAlign: 'right' }}>
-                        <p style={{ fontSize: '1.2rem', fontWeight: '800', color: '#ff4d4f', margin: 0 }}>฿{Number(plan.price).toLocaleString()}</p>
-                      </td>
-                      <td style={{ padding: '1rem', textAlign: 'right' }}>
-                        <button 
-                          onClick={() => { 
-                            // ค้นหาชื่อยี่ห้อและรุ่นจาก Master Data
-                            const selectedBrand = master.brands.find(b => b.code === vehicle.brand);
-                            const selectedModel = (master.models[vehicle.brand] || []).find((m: any) => m.code === vehicle.model);
+                        <span style={{ fontSize: '0.95rem', color: '#008060', fontWeight: '600' }}>{plan.planName}</span>
+                      </div>
+                      {plan.logoUrl && <img src={plan.logoUrl} alt="" style={{ height: '40px', maxWidth: '100px', objectFit: 'contain' }} />}
+                    </div>
 
-                            const fullVehicleData = {
-                              ...vehicle,
-                              brandName: selectedBrand?.name || 'N/A',
-                              modelName: selectedModel?.name || 'N/A'
-                            };
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '20px', padding: '20px', background: '#f9fbf9', borderRadius: '16px', border: '1px solid #edf2ef' }}>
+                      <div>
+                        <small style={{ color: '#888', display: 'block', marginBottom: '4px', fontSize: '0.75rem', fontWeight: '600', textTransform: 'uppercase' }}>ทุนประกัน</small>
+                        <span style={{ fontWeight: '800', fontSize: '1.1rem', color: '#333' }}>{typeof plan.confirmedSumInsured === 'number' ? plan.confirmedSumInsured.toLocaleString() : plan.confirmedSumInsured} <small style={{ fontSize: '0.8rem', fontWeight: '500' }}>บาท</small></span>
+                      </div>
+                      <div>
+                        <small style={{ color: '#888', display: 'block', marginBottom: '4px', fontSize: '0.75rem', fontWeight: '600', textTransform: 'uppercase' }}>ค่าเสียหายส่วนแรก</small>
+                        <span style={{ fontWeight: '800', fontSize: '1.1rem', color: '#333' }}>ไม่มี</span>
+                      </div>
+                    </div>
 
-                            localStorage.setItem('selectedPlan', JSON.stringify(plan)); 
-                            localStorage.setItem('selectedVehicle', JSON.stringify(fullVehicleData)); 
-                            router.push('/user/quotation'); 
-                          }} 
-                          className="btn-primary" 
-                          style={{ padding: '8px 20px', borderRadius: '50px', fontSize: '0.85rem' }}
-                        >
-                          เลือกแผน
-                        </button>
-                      </td>
-                    </tr>
-                    {expandedIdx === idx && (
-                      <tr style={{ borderBottom: '1px solid #f5f5f5' }}>
-                        <td colSpan={4} style={{ padding: '0 1rem 1.5rem 1rem', background: '#fcfcfc' }}>
-                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '10px', padding: '15px', borderRadius: '12px', border: '1px solid #f0f0f0', background: 'white' }}>
-                            {plan.coverages?.map((cov: any, cidx: number) => (
-                              <div key={cidx} style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px dashed #eee', paddingBottom: '5px' }}>
-                                <span style={{ fontSize: '0.75rem', color: '#666' }}>{cov.title}</span>
-                                <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#333' }}>{cov.value === 'N/A' ? 'คุ้มครอง' : `฿${cov.value}`}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </td>
-                      </tr>
-                    )}
-                  </React.Fragment>
-                ))}
-                {plans.length === 0 && !loading && (
-                  <tr><td colSpan={4} style={{ padding: '5rem', textAlign: 'center', color: '#999' }}>กรอกข้อมูลด้านซ้ายเพื่อเช็คเบี้ย</td></tr>
-                )}
-              </tbody>
-            </table>
+                    <div style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', color: '#008060', fontWeight: '600' }}>
+                        🛡️ ช่วยเหลือฉุกเฉิน 24 ชม.
+                      </span>
+                      {plan.isApi && <span style={{ padding: '4px 12px', borderRadius: '20px', background: '#E6F2ED', color: '#008060', fontSize: '0.75rem', fontWeight: '700' }}>⚡️ ดึงราคาจาก API</span>}
+                    </div>
+                  </div>
+
+                  {/* Right: Price & Action */}
+                  <div style={{ padding: '32px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', background: '#fafafa' }}>
+                    <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+                      <p style={{ margin: 0, fontSize: '0.9rem', color: '#888', fontWeight: '600' }}>เบี้ยประกันรวมภาษี</p>
+                      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: '4px' }}>
+                        <span style={{ fontSize: '2.4rem', fontWeight: '900', color: '#1a1a1a', letterSpacing: '-1px' }}>{Number(plan.price).toLocaleString()}</span>
+                        <span style={{ fontSize: '1rem', color: '#666', fontWeight: '700' }}>บาท</span>
+                      </div>
+                      <span style={{ fontSize: '0.8rem', color: '#008060', background: '#E6F2ED', padding: '2px 10px', borderRadius: '10px', fontWeight: '700' }}>ประหยัดกว่า 15%</span>
+                    </div>
+                    
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '12px', width: '100%' }}>
+                      <button style={{ 
+                        padding: '14px', borderRadius: '14px', border: '1px solid #ddd', background: 'white', 
+                        fontWeight: '700', cursor: 'pointer', fontSize: '0.9rem', transition: '0.2s'
+                      }}>
+                        รายละเอียด
+                      </button>
+                      <button 
+                        onClick={() => {
+                          localStorage.setItem('selectedPlan', JSON.stringify(plan));
+                          router.push('/user/quotation');
+                        }}
+                        style={{ 
+                          padding: '14px', borderRadius: '14px', border: 'none', background: '#008060', 
+                          color: 'white', fontWeight: '800', cursor: 'pointer', fontSize: '0.95rem',
+                          boxShadow: '0 4px 12px rgba(0,128,96,0.2)', transition: '0.2s'
+                        }}
+                      >
+                        เลือกแผนนี้
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div style={{ textAlign: 'center', padding: '80px', background: 'white', borderRadius: '24px', border: '2px dashed #eee' }}>
+                <div style={{ fontSize: '3rem', marginBottom: '20px' }}>🔍</div>
+                <h3 style={{ color: '#333', marginBottom: '8px' }}>ยังไม่ได้เลือกข้อมูลการเช็คเบี้ย</h3>
+                <p style={{ color: '#999', maxWidth: '300px', margin: '0 auto 24px auto' }}>กรุณากดปุ่มด้านล่างเพื่อเริ่มค้นหาแผนประกันภัยที่คุ้มค่าที่สุด</p>
+                <button onClick={handleSearch} style={{ 
+                  padding: '16px 48px', borderRadius: '50px', background: '#008060', color: 'white', 
+                  border: 'none', fontWeight: '800', cursor: 'pointer', fontSize: '1rem',
+                  boxShadow: '0 10px 20px rgba(0,128,96,0.15)'
+                }}>
+                  เริ่มค้นหาเบี้ยประกัน
+                </button>
+              </div>
+            )}
           </div>
         </section>
-
       </div>
 
       <style jsx global>{`
-        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'IBM Plex Sans Thai', sans-serif; background-color: #ffffff; }
-        .btn-primary { background: #006aff; color: white; border: none; cursor: pointer; transition: 0.2s; }
-        .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
-        .btn-primary:disabled { background: #ccc; cursor: not-allowed; }
-        .card { box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
-        @media (max-width: 1024px) {
-          .adaptive-grid { grid-template-columns: 1fr !important; }
-        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        button:hover { filter: brightness(0.95); transform: translateY(-1px); }
+        button:active { transform: translateY(0); }
       `}</style>
     </main>
   );
