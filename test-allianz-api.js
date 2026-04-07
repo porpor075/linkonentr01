@@ -16,9 +16,9 @@ async function testAllianz() {
     const mockVehicle = {
       brand: '16', // Toyota
       model: '1041', // Corolla Altis
-      year: '2024',
+      year: '2025',
       fuelType: 'PETROL',
-      sumInsured: 500000,
+      sumInsured: 1000000,
       productCode: 'VMI',
       planType: 'VMI1',
       garageType: 'DEALER'

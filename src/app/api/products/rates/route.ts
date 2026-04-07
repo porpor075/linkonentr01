@@ -36,10 +36,12 @@ export async function POST(request: Request) {
               const isCMI = insuranceCategory === 'CMI';
               const quoteParams = { 
                 ...body, 
+                brand: body.brand || body.make || '16', // รองรับทั้ง brand และ make
+                model: body.model || '1041',
                 productCode: isCMI ? 'CMI' : 'VMI',
                 planType: product.planCode,
-                sumInsured: isCMI ? 0 : (product.planCode === 'VMI1' ? (body.listSumInsured || body.sumInsured || 500000) : 100000),
-                garageType: isCMI ? 'UNSPECIFIED' : body.garageType
+                sumInsured: isCMI ? 0 : (product.planCode === 'VMI1' ? (body.sumInsured || body.listSumInsured || 500000) : 100000),
+                garageType: isCMI ? 'UNSPECIFIED' : (body.garageType || product.repairType || 'COMPANY')
               };
 
               const quote = await getAllianzQuickQuote(accessToken, quoteParams);
@@ -157,9 +159,11 @@ export async function POST(request: Request) {
       return (order[a.planType] || 99) - (order[b.planType] || 99);
     });
 
-    return NextResponse.json({ status: 'success', plans: sortedPlans });
+    console.log(`[RATES_API] Returning ${sortedPlans.length} plans`);
+    return NextResponse.json(sortedPlans);
 
   } catch (error) {
+    console.error('[RATES_API] Error:', error);
     return NextResponse.json({ error: 'Failed to fetch rates' }, { status: 500 });
   }
 }

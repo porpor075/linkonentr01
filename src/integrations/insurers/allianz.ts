@@ -48,11 +48,13 @@ async function callSingleQuote(accessToken: string, vehicleInfo: any, planCode: 
   const url = 'https://asia-uat-th-pc.apis.allianz.com/v1/motor/quickquotes';
   
   // กำหนดประเภทอู่
-  let garage = "COMPANY";
-  if (productCode === "CMI" || planCode === "VMI2" || planCode === "VMI3") {
-    garage = "UNSPECIFIED";
-  } else if (planCode === "VMI1") {
-    garage = "DEALER";
+  let garage = vehicleInfo.garageType || "COMPANY";
+  if (!vehicleInfo.garageType) {
+    if (productCode === "CMI" || planCode === "VMI2" || planCode === "VMI3") {
+      garage = "UNSPECIFIED";
+    } else if (planCode === "VMI1") {
+      garage = "DEALER";
+    }
   }
 
   const today = new Date().toISOString().split('T')[0];
@@ -68,7 +70,7 @@ async function callSingleQuote(accessToken: string, vehicleInfo: any, planCode: 
       "fuelType": String(vehicleInfo.fuelType || "PETROL"),
       "make": String(vehicleInfo.brand || "16"),
       "model": String(vehicleInfo.model || "1041"),
-      "usage": productCode === "CMI" ? "1.10" : "110",
+      "usage": vehicleInfo.usage || (productCode === "CMI" ? "1.10" : "110"),
       "garageType": garage,
       "registrationNumber": String(vehicleInfo.registrationNumber || "กก1234"),
       "registrationState": "0",
@@ -82,7 +84,7 @@ async function callSingleQuote(accessToken: string, vehicleInfo: any, planCode: 
     "productPackages": [
       {
         "name": "GRANU",
-        "coverages": [{ "name": planCode, "code": planCode, "sumInsured": sumInsured }]
+        "coverages": [{ "name": planCode, "code": planCode, "sumInsured": sumInsured === null ? null : sumInsured }]
       }
     ]
   };
