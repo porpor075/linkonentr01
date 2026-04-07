@@ -160,7 +160,7 @@ export async function POST(request: Request) {
     });
 
     console.log(`[RATES_API] Returning ${sortedPlans.length} plans`);
-    return NextResponse.json(sortedPlans);
+    return NextResponse.json({ status: 'success', plans: sortedPlans });
 
   } catch (error) {
     console.error('[RATES_API] Error:', error);
