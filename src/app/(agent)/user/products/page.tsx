@@ -30,22 +30,25 @@ export default function ConsistentProductSearch() {
   useEffect(() => {
     setMounted(true);
     
+    // Check for saved search data
+    const savedData = localStorage.getItem('insuranceSearchData');
+    if (savedData) {
+      const parsed = JSON.parse(savedData);
+      setVehicle(prev => ({
+        ...prev,
+        brand: parsed.brand,
+        model: parsed.model,
+        year: parsed.year,
+        insuranceCategory: parsed.category
+      }));
+      setInsuranceCategory(parsed.category);
+    }
+
     // Fetch Master Data
     fetch('/api/master/vehicles')
       .then(res => res.json())
       .then(data => {
         setMaster(data);
-        if (data.brands.length > 0) {
-          const firstBrand = data.brands[0].code;
-          const firstYear = data.years[0];
-          const firstModel = data.models[firstBrand]?.[0]?.code || '';
-          setVehicle(prev => ({ 
-            ...prev, 
-            brand: firstBrand, 
-            year: firstYear,
-            model: firstModel
-          }));
-        }
       });
 
     // Fetch Plan Types
@@ -63,6 +66,13 @@ export default function ConsistentProductSearch() {
       })
       .catch(err => console.error('Failed to fetch available plans:', err));
   }, []);
+
+  // 3. Auto-search if data is present
+  useEffect(() => {
+    if (mounted && vehicle.brand && vehicle.model && vehicle.year) {
+      handleSearch();
+    }
+  }, [mounted]);
 
   // 2. Fetch Sum Insured Range
   useEffect(() => {
