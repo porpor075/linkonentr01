@@ -208,7 +208,7 @@ export default function ConsistentProductSearch() {
                   handleSearch();
                 }}
                 style={{ 
-                  flex: 1, padding: '14px', border: 'none', 
+                  flex: 1, padding: '14px', 
                   background: vehicle.planType === p ? '#E6F2ED' : 'transparent',
                   borderRadius: '12px', color: vehicle.planType === p ? '#008060' : '#777', 
                   fontWeight: '700', cursor: 'pointer', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
